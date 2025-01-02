@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-    http.HandleFunc("/terraria", webhook_handler)
+    http.HandleFunc("/trailcompass", webhook_handler)
 
     println("Server is starting up...")
 
