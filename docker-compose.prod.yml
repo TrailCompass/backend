@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:17
+    ports:
+      - 2345:5432
+    environment:
+      POSTGRES_USER: trailcompass
+      POSTGRES_PASSWORD: trailcompass
+      POSTGRES_DB: trailcompass
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "trailcompass"]
+      interval: 5s
+      retries: 5
+    restart: always
+    networks:
+      - postgres-db-network
+  server:
+      image: ghcr.io/trailcompass/backend:main
+      environment:
+        - POSTGRES=db:2345
+        - POSTGRES_USER=trailcompass
+        - POSTGRES_PASSWORD=trailcompass
+      ports:
+          - 8080:8080
+      networks:
+          - postgres-db-network
+
+volumes:
+    postgres-db-volume:
+networks:
+    postgres-db-network:
