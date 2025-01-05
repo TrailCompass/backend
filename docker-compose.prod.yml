@@ -17,7 +17,7 @@ services:
     networks:
       - postgres-db-network
   server:
-      image: ghcr.io/trailcompass/backend:main
+      image: ghcr.io/trailcompass/backend:latest
       environment:
         - POSTGRES=db:2345
         - POSTGRES_USER=trailcompass
