@@ -8,8 +8,16 @@ import (
     "encoding/hex"
 )
 
+type server struct {
+    db_string string,
+}
+
 func main() {
-    http.HandleFunc("/trailcompass", webhook_handler)
+    rows, err := db.Query("SELECT name FROM users WHERE age = $1", 21)
+
+    println(rows)
+
+    http.HandleFunc("/users", webhook_users)
 
     println("Server is starting up...")
 
