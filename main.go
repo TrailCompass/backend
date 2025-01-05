@@ -9,13 +9,13 @@ import (
 )
 
 type server struct {
-    db_string string,
+    db_string string
 }
 
 func main() {
-    rows, err := db.Query("SELECT name FROM users WHERE age = $1", 21)
+    //rows, err := db.Query("SELECT name FROM users WHERE age = $1", 21)
 
-    println(rows)
+    //println(rows)
 
     http.HandleFunc("/users", webhook_users)
 
