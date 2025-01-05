@@ -13,7 +13,7 @@ type webhook_payload struct {
 
 }
 
-func webhook_handler(w http.ResponseWriter, r *http.Request) {
+func webhook_users(w http.ResponseWriter, r *http.Request) {
     if r.Method != http.MethodPost {
         w.WriteHeader(http.StatusMethodNotAllowed)
         return
