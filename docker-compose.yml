@@ -26,4 +26,3 @@ volumes:
     postgres-db-volume:
 networks:
     postgres-db-network:
-        driver: bridge
