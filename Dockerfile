@@ -1,13 +1,13 @@
 # syntax=docker/dockerfile:1
 
 # Build the application from source
-FROM golang:1.22-alpine AS build
+FROM golang:1.23-alpine AS build
 
 # Set destination for COPY
 WORKDIR /app
 
 # Download Go modules
-COPY go.mod ./
+COPY go.mod go.sum ./
 RUN go mod download
 
 # Copy the source code. Note the slash at the end, as explained in
