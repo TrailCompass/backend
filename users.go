@@ -3,7 +3,7 @@ package main
 import (
     "database/sql"
 
-    _ "github.com/lib/pq"
+    _ "github.com/go-sql-driver/mysql"
 )
 
 func (server *server) add_user(id int, name string) {
