@@ -1,33 +1,37 @@
 services:
   db:
-    image: postgres:17
+    image: mariadb:lts
     ports:
-      - 2345:5432
+      - "3333:3306"
     environment:
-      POSTGRES_USER: trailcompass
-      POSTGRES_PASSWORD: trailcompass
-      POSTGRES_DB: trailcompass
+      MARIADB_USER: trailcompass
+      MARIADB_PASSWORD: trailcompass
+      MARIADB_DATABASE: tc_system
+      MARIADB_RANDOM_ROOT_PASSWORD: true
     volumes:
-      - postgres-db-volume:/var/lib/postgresql/data
+      - mariadb-volume:/var/lib/mysql:Z
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "trailcompass"]
-      interval: 5s
-      retries: 5
+      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
     restart: always
     networks:
-      - postgres-db-network
+      - internal-network
   server:
-      build: .
-      environment:
-        - POSTGRES=db:2345
-        - POSTGRES_USER=trailcompass
-        - POSTGRES_PASSWORD=trailcompass
-      ports:
-          - 8080:8080
-      networks:
-          - postgres-db-network
+    build: .
+    environment:
+      - MARIA=db:3333
+      - MARIA_DB=tc_system
+      - MARIA_USER=trailcompass
+      - MARIA_PASSWORD=trailcompass
+    ports:
+      - "8080:8080"
+    networks:
+      - internal-network
 
 volumes:
-    postgres-db-volume:
+  mariadb-volume:
 networks:
-    postgres-db-network:
+  internal-network:
