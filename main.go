@@ -27,7 +27,9 @@ func main() {
 
     server.db_string = os.Getenv("POSTGRES_DB")
 
-    http.HandleFunc("/users", webhook_users)
+    println("DB_STRING:", server.db_string)
+
+    http.HandleFunc("/uac/", webhook_auth)
 
     println("Server is starting up...")
 
