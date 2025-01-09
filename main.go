@@ -1,47 +1,57 @@
 package main
 
 import (
-    "net/http"
-    "database/sql"
-     "github.com/go-sql-driver/mysql"
+	"database/sql"
+	"github.com/go-sql-driver/mysql"
+	"net/http"
 
-    "os"
-
-//    "crypto/hmac"
-//    "crypto/sha256"
-//    "encoding/hex"
+	"os"
+	//    "crypto/hmac"
+	//    "crypto/sha256"
+	//    "encoding/hex"
 )
 
 type server struct {
-    db *sql.DB
+	db *sql.DB
 }
 
 func main() {
-    var server server
+	var server server
 
-    cfg := mysql.Config{
-        User:   os.Getenv("DBUSER"),
-        Passwd: os.Getenv("DBPASS"),
-        Net:    "tcp",
-        Addr:   "127.0.0.1:3306",
-        DBName: "tc_system",
-        AllowNativePasswords: true,
-    }
+	cfg := mysql.Config{
+		User:                 os.Getenv("MARIA_USER"),
+		Passwd:               os.Getenv("MARIA_PASSWORD"),
+		Net:                  "tcp",
+		Addr:                 os.Getenv("MARIA"),
+		DBName:               os.Getenv("MARIA_DB"),
+		AllowNativePasswords: true,
+	}
 
-    db, err := sql.Open("mysql", cfg.FormatDSN())
+	db, err := sql.Open("mysql", cfg.FormatDSN())
 
-    if err != nil {}
-    server.db = db
+	if err != nil {
+		println(err.Error())
+		return
+	}
+	server.db = db
 
-    http.HandleFunc("/uac/", server.webhook_auth)
+	http.HandleFunc("/uac/", server.webhook_auth)
 
-    println("Server is starting up...")
+	println("Server is starting up...")
 
-    http.ListenAndServe(":8080", nil)
+	err = http.ListenAndServe(":8080", nil)
+	if err != nil {
+		println(err.Error())
+		return
+	}
 
-    server.db.Close()
+	err = server.db.Close()
+	if err != nil {
+		println(err.Error())
+		return
+	}
 }
 
 func validate_signature(payload []byte, signature string, secret string) bool {
-    return false
+	return false
 } // TODO
