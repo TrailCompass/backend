@@ -5,15 +5,17 @@ import (
     "encoding/json"
     "io"
     "strings"
+
+    _ "github.com/go-sql-driver/mysql"
 )
 
 type auth_payload struct {
     Username    string `json:"username"`
-    Password    string `json:"password"`
+    Password    string `json:"passwordhash"`
     Token       []byte `json:"token"`
 }
 
-func webhook_auth(w http.ResponseWriter, r *http.Request) {
+func (server *server) webhook_auth(w http.ResponseWriter, r *http.Request) {
     if r.Method != http.MethodPost {
         w.WriteHeader(http.StatusMethodNotAllowed)
         return
@@ -44,7 +46,19 @@ func webhook_auth(w http.ResponseWriter, r *http.Request) {
 
     switch event {
     case "login":
-        println("Hello World Motherf-")
+        rows, err := server.db.Exec("SELECT id, name, passwordhash FROM users WHERE 'name' = '$1' AND 'password' = '$2'", payload.Username, payload.Password)
+        if err != nil {
+            println("login err")
+            println(err)
+            w.WriteHeader(http.StatusBadRequest)
+            return
+        }
+        if rows == nil {
+            println("User dosen't exist")
+            w.WriteHeader(http.StatusBadRequest)
+            return
+        }
+        w.Write([]byte("You are logged in!"))
     default:
         w.WriteHeader(http.StatusBadRequest)
         w.Write([]byte("Put the fries in the bag lil bro"))

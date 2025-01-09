@@ -3,7 +3,7 @@ package main
 import (
     "net/http"
     "database/sql"
-     _ "github.com/go-sql-driver/mysql"
+     "github.com/go-sql-driver/mysql"
 
     "os"
 
@@ -14,22 +14,26 @@ import (
 
 type server struct {
     db *sql.DB
-    db_string string
 }
 
 func main() {
     var server server
 
-    db, err := sql.Open("mysql", server.db_string)
+    cfg := mysql.Config{
+        User:   os.Getenv("DBUSER"),
+        Passwd: os.Getenv("DBPASS"),
+        Net:    "tcp",
+        Addr:   "127.0.0.1:3306",
+        DBName: "tc_system",
+        AllowNativePasswords: true,
+    }
+
+    db, err := sql.Open("mysql", cfg.FormatDSN())
 
     if err != nil {}
     server.db = db
 
-    server.db_string = os.Getenv("POSTGRES_DB")
-
-    println("DB_STRING:", server.db_string)
-
-    http.HandleFunc("/uac/", webhook_auth)
+    http.HandleFunc("/uac/", server.webhook_auth)
 
     println("Server is starting up...")
 
