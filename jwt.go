@@ -2,53 +2,91 @@ package main
 
 import (
 	"errors"
+	"math/rand"
 	"net/http"
 	"time"
 
 	"github.com/golang-jwt/jwt"
 )
 
-func generate_jwt(username string, password string) (string, error) {
-	token := jwt.New(jwt.SigningMethodHS256)
+func getHMACToken(server *server) []byte {
+	query, err := server.db.Query("SELECT * FROM tc_system.keystore WHERE `key`='jwt_key' LIMIT 1;")
+	if err != nil {
+		server.logger.Error(err.Error())
+		return []byte(nil)
+	}
+	if !query.Next() {
+		server.logger.Warn("no jwt_key found, generating")
+		generate_HMAC_token(server)
+		return getHMACToken(server)
+	}
+	return []byte("")
+}
+
+func generate_HMAC_token(server *server) {
+	_, err := server.db.Exec("INSERT INTO tc_system.keystore (`key`, `value`) VALUES ('jwt_key', ?);", RandomString(64))
+	if err != nil {
+		server.logger.Error(err.Error())
+		return
+	}
+}
+
+func generate_jwt(id int, server *server) (string, error) {
+	token := jwt.New(jwt.SigningMethodHS512)
 	claims := token.Claims.(jwt.MapClaims)
 
-	claims["username"] = username
-	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
-	claims["password"] = password
+	claims["id"] = id
+	claims["exp"] = time.Now().Add(time.Hour).Unix()
 
-	token_string, err := token.SignedString("Hello World")
+	token_string, err := token.SignedString(getHMACToken(server))
 
 	if err != nil {
-		println("JWT Generation failed:", err.Error())
+		server.logger.Error("JWT Generation failed:", err.Error())
 		return "", err
 	}
 	return token_string, nil
 }
 
-func validate_jwt(w http.ResponseWriter, r *http.Request) (err error) {
+func validate_jwt(r *http.Request, server *server) (id int, err error) {
 	if r.Header["Token"] == nil {
-		println("Token is invalid")
-		return errors.New("Invalid JWT")
+		server.logger.Error("Token is invalid")
+		return -1, errors.New("invalid JWT")
 	}
 
 	token, err := jwt.Parse(r.Header["Token"][0], func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("There was an error in parsing")
+			server.logger.Debug("Unexpected signing method: %v", token.Header["alg"])
+			return nil, errors.New("there was an error in parsing")
 		}
-		return "Hello World", nil
+		return getHMACToken(server), nil
 	})
+
+	if token == nil {
+		server.logger.Debug("Token is invalid")
+		return -1, errors.New("invalid JWT")
+	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		println("Couldn't parse claims")
-		return errors.New("Token error")
+		server.logger.Debug("Couldn't parse claims")
+		return -1, errors.New("token error")
 	}
 
 	exp := claims["exp"].(float64)
 	if int64(exp) < time.Now().Local().Unix() {
-		println("Token is expired")
-		return errors.New("Token error")
+		server.logger.Debug("Token is expired")
+		return -1, errors.New("token error")
 	}
+	i := int(claims["id"].(float64))
+	return i, nil
+}
 
-	return nil
+func RandomString(n int) string {
+	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+
+	s := make([]rune, n)
+	for i := range s {
+		s[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(s)
 }

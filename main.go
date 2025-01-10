@@ -3,7 +3,11 @@ package main
 import (
 	"database/sql"
 	"github.com/go-sql-driver/mysql"
+	"github.com/lmittmann/tint"
+	"github.com/mattn/go-isatty"
+	"log/slog"
 	"net/http"
+	"strconv"
 
 	"os"
 	//    "crypto/hmac"
@@ -12,12 +16,28 @@ import (
 )
 
 type server struct {
-	db *sql.DB
+	db     *sql.DB
+	logger *slog.Logger
 }
 
 func main() {
-	var server server
+	w := os.Stderr
+	logger := slog.New(
+		tint.NewHandler(w, &tint.Options{
+			NoColor: !isatty.IsTerminal(w.Fd()),
+		}),
+	)
 
+	logger.Info("Server is starting up...")
+	var server server
+	server.logger = logger
+	var port, interr = strconv.Atoi(os.Getenv("PORT"))
+	if interr != nil {
+		logger.Warn("Port is invalid, using 8080")
+		port = 8080
+	}
+
+	logger.Info("Connecting to database...")
 	cfg := mysql.Config{
 		User:                 os.Getenv("MARIA_USER"),
 		Passwd:               os.Getenv("MARIA_PASSWORD"),
@@ -30,30 +50,35 @@ func main() {
 	db, err := sql.Open("mysql", cfg.FormatDSN())
 
 	if err != nil {
-		println(err.Error())
+		logger.Error(err.Error())
 		return
 	}
 	server.db = db
+	logger.Info("Database connected!...")
+	logger.Info("Migrating...")
 
 	migrate(&server)
 
+	logger.Info("Migrated!")
+	logger.Info("Finalising...")
+
 	http.HandleFunc("/uac/", server.webhook_auth)
 
-	println("Server is starting up...")
+	logger.Info("Ready!")
 
-	err = http.ListenAndServe(":8080", nil)
+	print("\033[H\033[2J")
+	println(generateIntroMural())
+	logger.Info("Listening on port " + strconv.Itoa(port) + "...")
+
+	err = http.ListenAndServe(":"+strconv.Itoa(port), nil)
 	if err != nil {
-		println(err.Error())
+		logger.Error(err.Error())
 		return
 	}
 
 	err = server.db.Close()
 	if err != nil {
-		println(err.Error())
+		logger.Error(err.Error())
 		return
 	}
 }
-
-func validate_signature(payload []byte, signature string, secret string) bool {
-	return false
-} // TODO
