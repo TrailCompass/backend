@@ -35,6 +35,8 @@ func main() {
 	}
 	server.db = db
 
+	migrate(&server)
+
 	http.HandleFunc("/uac/", server.webhook_auth)
 
 	println("Server is starting up...")
