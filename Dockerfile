@@ -24,6 +24,8 @@ RUN go test -v ./...
 # Deploy the application binary into a lean image
 FROM alpine:3.21 AS release
 
+LABEL org.opencontainers.image.description = "Tracker server for Hide+Seek"
+
 WORKDIR /server
 COPY --from=build /trailcompass /server/trailcompass
 
