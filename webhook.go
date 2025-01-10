@@ -139,6 +139,7 @@ func (server *server) webhook_auth(w http.ResponseWriter, r *http.Request) {
 			server.logger.Error(err.Error())
 			return
 		}
-		server.logger.Info("Bruh: ", event)
+		server.logger.Info("Bruh: ")
+		server.logger.Info(event)
 	}
 }

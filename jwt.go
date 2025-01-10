@@ -41,7 +41,8 @@ func generate_jwt(id int, server *server) (string, error) {
 	token_string, err := token.SignedString(getHMACToken(server))
 
 	if err != nil {
-		server.logger.Error("JWT Generation failed:", err.Error())
+		server.logger.Error("JWT Generation failed:")
+		server.logger.Error(err.Error())
 		return "", err
 	}
 	return token_string, nil
