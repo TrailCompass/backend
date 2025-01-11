@@ -1,0 +1,37 @@
+services:
+  db:
+    image: mariadb:lts
+    ports:
+      - "3333:3306"
+    environment:
+      MARIADB_USER: trailcompass
+      MARIADB_PASSWORD: trailcompass
+      MARIADB_DATABASE: tc_system
+      MARIADB_RANDOM_ROOT_PASSWORD: true
+    volumes:
+      - mariadb-volume:/var/lib/mysql:Z
+    healthcheck:
+      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: always
+    networks:
+      - internal-network
+  server:
+    build: .
+    environment:
+      - MARIA=db:3306
+      - MARIA_DB=tc_system
+      - MARIA_USER=trailcompass
+      - MARIA_PASSWORD=trailcompass
+    ports:
+      - "8080:8080"
+    networks:
+      - internal-network
+
+volumes:
+  mariadb-volume:
+networks:
+  internal-network:

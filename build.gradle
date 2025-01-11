@@ -1,0 +1,40 @@
+plugins {
+    id "java"
+}
+
+group = 'space.itoncek.trailcompass'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    implementation 'io.javalin:javalin:6.4.0'
+    implementation 'org.json:json:20240303'
+    implementation 'ch.qos.logback:logback-core:1.5.13'
+    // https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
+    implementation 'org.mariadb.jdbc:mariadb-java-client:3.5.1'
+    implementation("com.github.kmehrunes:javalin-jwt:0.7.0")
+    implementation("org.apache.commons:commons-lang3:3.14.0")
+    implementation("commons-io:commons-io:2.15.1")
+    implementation("org.slf4j:slf4j-simple:2.0.16")
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'space.itoncek.trailcompass.TrailServer'
+        )
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+test {
+    useJUnitPlatform()
+}
