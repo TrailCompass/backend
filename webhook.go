@@ -64,25 +64,25 @@ func (server *server) webhook_auth(c echo.Context) error {
 			token, err := generate_jwt(id, server)
 			//TODO: Generate JWT token to be returned
 
-			c.Response().WriteHeader(http.StatusOK)
-			c.Response().Header().Set("Content-Type", "application/json")
+			r.WriteHeader(http.StatusOK)
+			r.Header().Set("Content-Type", "application/json")
 			// err = json.NewEncoder(w).Encode(auth_login_response{token})
 			err = c.JSON(http.StatusOK, auth_login_response{token})
             if err != nil {
 				server.logger.Error(err.Error())
 				return nil
 			}
-            c.Response().Flush()
+            r.Flush()
 			return nil
 		} else {
 			// w.WriteHeader(http.StatusUnauthorized)
 			// _, err := w.Write([]byte("auth failed"))
-            c.Response().WriteHeader(http.StatusUnauthorized)
-            c.Response().Write([]byte("auth failed"))
+            r.WriteHeader(http.StatusUnauthorized)
+            r.Write([]byte("auth failed"))
 			if err != nil {
 				server.logger.Error(err.Error())
 			}
-			c.Response().Flush()
+			r.Flush()
             return nil
 		}
 	case "register":
@@ -90,23 +90,23 @@ func (server *server) webhook_auth(c echo.Context) error {
 		_, err := server.db.Exec("INSERT INTO tc_system.users (name, passwordhash) VALUES(?, ?);", payload.Username, payload.Password)
 		if err != nil {
 			server.logger.Error(err.Error())
-            _, err := c.Response().Write([]byte("Unable to register user, probably same name/password as already existing user!"))
+            _, err := r.Write([]byte("Unable to register user, probably same name/password as already existing user!"))
 			if err != nil {
 				server.logger.Error(err.Error())
-                c.Response().WriteHeader(http.StatusInternalServerError)
-                c.Response().Flush()
+                r.WriteHeader(http.StatusInternalServerError)
+                r.Flush()
 				return nil
 			}
-            c.Response().WriteHeader(http.StatusUnauthorized)
-            c.Response().Flush()
+            r.WriteHeader(http.StatusUnauthorized)
+            r.Flush()
 			return nil
 		}
-		c.Response().WriteHeader(http.StatusOK)
-		_, err = c.Response().Write([]byte("ok"))
+		r.WriteHeader(http.StatusOK)
+		_, err = r.Write([]byte("ok"))
 		if err != nil {
 			server.logger.Error(err.Error())
 		}
-        c.Response().Flush()
+        r.Flush()
 		return nil
 	case "isLoggedIn":
 		id, err := validate_jwt(r, server)
