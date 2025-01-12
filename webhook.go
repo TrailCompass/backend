@@ -113,29 +113,32 @@ func (server *server) webhook_auth(c echo.Context) error {
 		if err != nil {
 			server.logger.Error("Attempted unauthorized request")
 			server.logger.Error(err.Error())
-			w.WriteHeader(http.StatusOK)
-			_, err2 := w.Write([]byte("attempted unauthorized request, this incident has been reported!"))
+			r.WriteHeader(http.StatusOK)
+			_, err2 := r.Write([]byte("attempted unauthorized request, this incident has been reported!"))
 			if err2 != nil {
 				server.logger.Error(err.Error())
-				return
 			}
-			return
+            r.Flush()
+			return nil
 		}
-		w.WriteHeader(http.StatusOK)
-		_, err = w.Write([]byte("Authorised as user #" + strconv.Itoa(id)))
+		r.WriteHeader(http.StatusOK)
+		_, err = r.Write([]byte("Authorised as user #" + strconv.Itoa(id)))
 		if err != nil {
 			server.logger.Error(err.Error())
-			return
 		}
-		return
+        r.Flush()
+		return nil
 	default:
-		w.WriteHeader(http.StatusBadRequest)
-		_, err := w.Write([]byte("Put the fries in the bag lil bro"))
+		r.WriteHeader(http.StatusBadRequest)
+		_, err := r.Write([]byte("Put the fries in the bag lil bro"))
 		if err != nil {
 			server.logger.Error(err.Error())
-			return
+            r.Flush()
+			return nil
 		}
+        r.Flush()
 		server.logger.Info("Bruh: ")
 		server.logger.Info(event)
 	}
+    return nil
 }
