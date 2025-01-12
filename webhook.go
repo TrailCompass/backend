@@ -6,8 +6,8 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"strings"
 
+    "github.com/labstack/echo/v4"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -20,17 +20,10 @@ type auth_login_response struct {
 	Token string `json:"token"`
 }
 
-func (server *server) webhook_auth(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
+func (server *server) webhook_auth(c echo.Context) {
+	// event := strings.TrimPrefix(r.URL.Path, "/uac/")
+    event := c.Param("event")
 
-	event := strings.TrimPrefix(r.URL.Path, "/uac/")
-
-	if event == "" {
-		w.WriteHeader(http.StatusBadRequest)
-	}
 
 	body, err := io.ReadAll(r.Body)
 

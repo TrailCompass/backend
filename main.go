@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"strconv"
 
+    "github.com/labstack/echo/v4"
+
 	"os"
 	//    "crypto/hmac"
 	//    "crypto/sha256"
@@ -61,8 +63,10 @@ func main() {
 
 	logger.Info("Migrated!")
 	logger.Info("Finalising...")
-
-	http.HandleFunc("/uac/", server.webhook_auth)
+    
+    e := echo.New()
+    e.POST("/uac/:event", server.webhook_auth)
+	e.Logger.Fatal(e.Start(":8080"))
 
 	logger.Info("Ready!")
 
