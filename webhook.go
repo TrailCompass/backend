@@ -23,6 +23,7 @@ type auth_login_response struct {
 func (server *server) webhook_auth(c echo.Context) error {
 	// event := strings.TrimPrefix(r.URL.Path, "/uac/")
     event := c.Param("event")
+    r := c.Response()
     
     body, err := io.ReadAll(c.Request().Body)
     if err != nil {
@@ -89,21 +90,24 @@ func (server *server) webhook_auth(c echo.Context) error {
 		_, err := server.db.Exec("INSERT INTO tc_system.users (name, passwordhash) VALUES(?, ?);", payload.Username, payload.Password)
 		if err != nil {
 			server.logger.Error(err.Error())
-			_, err := w.Write([]byte("Unable to register user, probably same name/password as already existing user!"))
+            _, err := c.Response().Write([]byte("Unable to register user, probably same name/password as already existing user!"))
 			if err != nil {
 				server.logger.Error(err.Error())
-				return
+                c.Response().WriteHeader(http.StatusInternalServerError)
+                c.Response().Flush()
+				return nil
 			}
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+            c.Response().WriteHeader(http.StatusUnauthorized)
+            c.Response().Flush()
+			return nil
 		}
-		w.WriteHeader(http.StatusOK)
-		_, err = w.Write([]byte("ok"))
+		c.Response().WriteHeader(http.StatusOK)
+		_, err = c.Response().Write([]byte("ok"))
 		if err != nil {
 			server.logger.Error(err.Error())
-			return
 		}
-		return
+        c.Response().Flush()
+		return nil
 	case "isLoggedIn":
 		id, err := validate_jwt(r, server)
 		if err != nil {
