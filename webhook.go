@@ -63,22 +63,26 @@ func (server *server) webhook_auth(c echo.Context) error {
 			token, err := generate_jwt(id, server)
 			//TODO: Generate JWT token to be returned
 
-			w.WriteHeader(http.StatusOK)
-			w.Header().Set("Content-Type", "application/json")
-			err = json.NewEncoder(w).Encode(auth_login_response{token})
-			if err != nil {
+			c.Response().WriteHeader(http.StatusOK)
+			c.Response().Header().Set("Content-Type", "application/json")
+			// err = json.NewEncoder(w).Encode(auth_login_response{token})
+			err = c.JSON(http.StatusOK, auth_login_response{token})
+            if err != nil {
 				server.logger.Error(err.Error())
-				return
+				return nil
 			}
-			return
+            c.Response().Flush()
+			return nil
 		} else {
-			w.WriteHeader(http.StatusUnauthorized)
-			_, err := w.Write([]byte("auth failed"))
+			// w.WriteHeader(http.StatusUnauthorized)
+			// _, err := w.Write([]byte("auth failed"))
+            c.Response().WriteHeader(http.StatusUnauthorized)
+            c.Response().Write([]byte("auth failed"))
 			if err != nil {
 				server.logger.Error(err.Error())
-				return
 			}
-			return
+			c.Response().Flush()
+            return nil
 		}
 	case "register":
 		//TODO: verify auth token
