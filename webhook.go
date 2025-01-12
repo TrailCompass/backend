@@ -20,25 +20,21 @@ type auth_login_response struct {
 	Token string `json:"token"`
 }
 
-func (server *server) webhook_auth(c echo.Context) {
+func (server *server) webhook_auth(c echo.Context) error {
 	// event := strings.TrimPrefix(r.URL.Path, "/uac/")
     event := c.Param("event")
-
-
-	body, err := io.ReadAll(r.Body)
-
-	if err != nil {
-		server.logger.Error(err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+    
+    body, err := io.ReadAll(c.Request().Body)
+    if err != nil {
+        server.logger.Error(err.Error())
+        return c.String(http.StatusInternalServerError, "Failed to read body")
+    }
 
 	var payload auth_payload
 
 	if err := json.Unmarshal(body, &payload); err != nil {
 		server.logger.Error(err.Error())
-		w.WriteHeader(http.StatusBadRequest)
-		return
+		return c.String(http.StatusBadRequest, "Failed to Unmarshal the json request")
 	}
 
 	switch event {
@@ -46,8 +42,7 @@ func (server *server) webhook_auth(c echo.Context) {
 		rows, err := server.db.Query("SELECT id, name, passwordhash FROM tc_system.users WHERE name=? and passwordhash=?;", payload.Username, payload.Password)
 		if err != nil {
 			server.logger.Error(err.Error())
-			w.WriteHeader(http.StatusBadRequest)
-			return
+			return c.String(http.StatusBadRequest, "Failed to execute the SQL Query")
 		}
 		defer func(rows *sql.Rows) {
 			err := rows.Close()
@@ -63,7 +58,7 @@ func (server *server) webhook_auth(c echo.Context) {
 			err := rows.Scan(&id, &name, &password)
 			if err != nil {
 				server.logger.Error(err.Error())
-				return
+				return c.String(http.StatusInternalServerError, "No idea what happened")
 			}
 			token, err := generate_jwt(id, server)
 			//TODO: Generate JWT token to be returned
