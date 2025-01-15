@@ -201,4 +201,14 @@ public class LoginSystem {
 		}
 		return out;
 	}
+
+	public User getUser(Context ctx) {
+		Optional<DecodedJWT> decodedJWT = provider.validateToken(ctx.header(Header.AUTHORIZATION).substring(7));
+		if (decodedJWT.isEmpty()) {
+			return null;
+		}
+
+		int requesterID = decodedJWT.get().getClaim("id").asInt();
+		return server.db.getUser(requesterID);
+	}
 }

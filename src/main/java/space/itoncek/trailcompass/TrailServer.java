@@ -7,6 +7,7 @@ import io.javalin.openapi.plugin.swagger.SwaggerPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.modules.DBManager;
+import space.itoncek.trailcompass.modules.GameInstanceManagerSystem;
 import space.itoncek.trailcompass.modules.LoginSystem;
 
 import java.sql.SQLException;
@@ -14,6 +15,7 @@ import java.sql.SQLException;
 public class TrailServer {
 	private static final Logger log = LoggerFactory.getLogger(TrailServer.class);
 	public final boolean dev = System.getenv("DEV") != null && Boolean.parseBoolean(System.getenv("DEV"));
+	private final GameInstanceManagerSystem gims;
 	public final LoginSystem login;
 	public final DBManager db;
 	private final int PORT = System.getenv("PORT") == null ? 8080 : Integer.parseInt(System.getenv("PORT"));
@@ -27,13 +29,13 @@ public class TrailServer {
 			throw new RuntimeException();
 		}
 
-
 		try {
 			login = new LoginSystem(this);
 		} catch (SQLException e) {
 			log.error("Unable to init login system");
 			throw new RuntimeException();
 		}
+		gims = new GameInstanceManagerSystem(this);
 
 		app = Javalin.create(cfg -> {
 			cfg.http.gzipOnlyCompression(9);
@@ -58,11 +60,17 @@ public class TrailServer {
 				cfg.registerPlugin(new SwaggerPlugin());
 			}
 			cfg.router.apiBuilder(() -> {
+				before(login::checkTokenValidity);
 				path("uac", () -> {
-					before(login::checkTokenValidity);
 					post("login", login::login);
 					post("register", login::register);
 					get("verifyLogin", login::verifyLogin);
+				});
+				path("gamemanager", ()-> {
+					post("createGame", gims::createGame);
+					get("listGames", gims::listGames);
+					post("activateGame", gims::activateGame);
+					post("archiveGame", gims::archiveGame);
 				});
 			});
 		});
