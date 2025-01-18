@@ -3,6 +3,7 @@ package space.itoncek.trailcompass.utils;
 public class TextGraphics {
 	/**
 	 * Generates login box alert.
+	 *
 	 * @param username username
 	 * @param password password
 	 *
@@ -14,7 +15,7 @@ public class TextGraphics {
 		String user = "Username: " + username;
 		String pw = "Password: " + password;
 
-		int length = Math.max(alert2.length(),Math.max(user.length(),pw.length()))+4;
+		int length = Math.max(alert2.length(), Math.max(user.length(), pw.length())) + 4;
 		return "\n" + "╔" + "═".repeat(length) + "╗" + "\n" +
 			   "║" + "  " + alert + " ".repeat(length - alert.length() - 2) + "║\n" +
 			   "║" + "  " + alert2 + " ".repeat(length - alert2.length() - 2) + "║\n" +

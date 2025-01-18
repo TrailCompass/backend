@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.database.DatabaseInterface;
 import space.itoncek.trailcompass.database.MariaDatabaseImpl;
 import space.itoncek.trailcompass.modules.LoginSystem;
+import space.itoncek.trailcompass.modules.SetupModule;
 import static space.itoncek.trailcompass.utils.Randoms.generateRandomString;
 import space.itoncek.trailcompass.utils.TextGraphics;
 
@@ -20,6 +21,7 @@ public class TrailServer {
 	private static final Logger log = LoggerFactory.getLogger(TrailServer.class);
 	public final boolean dev = System.getenv("DEV") != null && Boolean.parseBoolean(System.getenv("DEV"));
 	public final LoginSystem login;
+	public final SetupModule setup;
 	public final DatabaseInterface db;
 	private final int PORT = System.getenv("PORT") == null ? 8080 : Integer.parseInt(System.getenv("PORT"));
 	Javalin app;
@@ -39,6 +41,8 @@ public class TrailServer {
 			throw new RuntimeException();
 		}
 
+		setup = new SetupModule(this);
+
 		app = Javalin.create(cfg -> {
 			cfg.http.gzipOnlyCompression(9);
 			cfg.http.prefer405over404 = true;
@@ -55,6 +59,10 @@ public class TrailServer {
 					post("login", login::login);
 					post("register", login::register);
 					get("verifyLogin", login::verifyLogin);
+				});
+				path("setup", () -> {
+					post("addCurse", setup::addCard);
+					get("listCurses", setup::listCards);
 				});
 			});
 		});
@@ -93,7 +101,7 @@ public class TrailServer {
 		if (db.needsDefaultUser()) {
 			String user = generateRandomString(10, true, false);
 			String password = generateRandomString(16, true, false);
-			db.createUser(user,password,true);
+			db.createUser(user, password, true);
 			log.info(TextGraphics.generateLoginBox(user, password));
 		}
 	}

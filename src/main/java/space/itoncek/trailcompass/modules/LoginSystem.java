@@ -12,19 +12,16 @@ import io.javalin.http.Header;
 import io.javalin.openapi.*;
 import javalinjwt.JWTGenerator;
 import javalinjwt.JWTProvider;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.TrailServer;
-import space.itoncek.trailcompass.objects.Permission;
 import space.itoncek.trailcompass.objects.SimpleUser;
 import space.itoncek.trailcompass.objects.User;
 import static space.itoncek.trailcompass.utils.Randoms.generateRandomString;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Optional;
 
 public class LoginSystem {
@@ -140,7 +137,7 @@ public class LoginSystem {
 				int requesterID = decodedJWT.get().getClaim("id").asInt();
 				User requester = server.db.getUserByID(requesterID);
 
-				if (requester == null || !requester.hasPermission(Permission.ADD_USERS)) {
+				if (requester == null || !requester.admin()) {
 					ctx.status(400).result(new JSONObject().put("error", "Neplatný token!").toString(4));
 					return;
 				}
@@ -188,14 +185,6 @@ public class LoginSystem {
 				h.status(401).result(new JSONObject().put("error", "Neplatný token!").toString(4));
 			}
 		}
-	}
-
-	private ArrayList<Permission> parsePermissions(JSONArray permissions) {
-		ArrayList<Permission> out = new ArrayList<>();
-		for (int i = 0; i < permissions.length(); i++) {
-			out.add(permissions.getEnum(Permission.class, i));
-		}
-		return out;
 	}
 
 	public User getUser(Context ctx) {

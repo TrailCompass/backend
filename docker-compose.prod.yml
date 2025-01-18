@@ -22,7 +22,7 @@ services:
   server:
     image: ghcr.io/trailcompass/backend:latest
     environment:
-      - MARIA=db:3333
+      - MARIA=db:3306
       - MARIA_DB=tc_system
       - MARIA_USER=trailcompass
       - MARIA_PASSWORD=trailcompass

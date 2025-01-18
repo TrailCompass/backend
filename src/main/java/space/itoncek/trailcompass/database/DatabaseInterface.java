@@ -1,10 +1,12 @@
 package space.itoncek.trailcompass.database;
 
 import org.jetbrains.annotations.Nullable;
+import space.itoncek.trailcompass.objects.Card;
 import space.itoncek.trailcompass.objects.SimpleUser;
 import space.itoncek.trailcompass.objects.User;
 
 import java.io.Closeable;
+import java.util.List;
 
 public interface DatabaseInterface extends Closeable {
 	/**
@@ -14,6 +16,7 @@ public interface DatabaseInterface extends Closeable {
 
 	/**
 	 * Fetches full user meta from the database.
+	 *
 	 * @param id database-generated ID of the specified user
 	 *
 	 * @return {@link User} object, can be null
@@ -22,7 +25,8 @@ public interface DatabaseInterface extends Closeable {
 
 	/**
 	 * Fetches simple user meta.
-	 * @param username username of the requested user
+	 *
+	 * @param username     username of the requested user
 	 * @param passwordhash SHA256-hash of the user's password
 	 *
 	 * @return {@link SimpleUser} object, can be null
@@ -31,7 +35,8 @@ public interface DatabaseInterface extends Closeable {
 
 	/**
 	 * Creates a new user in the database. The new user is never marked as an admin.
-	 * @param name username of the new user
+	 *
+	 * @param name         username of the new user
 	 * @param passwordhash SHA256-hash of the new user's password
 	 *
 	 * @return {@code true} if operation completed successfully, {@code false} otherwise
@@ -40,9 +45,10 @@ public interface DatabaseInterface extends Closeable {
 
 	/**
 	 * Creates a new user in the database.
-	 * @param name username of the new user
+	 *
+	 * @param name         username of the new user
 	 * @param passwordhash SHA256-hash of the new user's password
-	 * @param isAdmin should the new user be marked as admin?
+	 * @param isAdmin      should the new user be marked as admin?
 	 *
 	 * @return {@code true} if operation completed successfully, {@code false} otherwise
 	 */
@@ -52,4 +58,8 @@ public interface DatabaseInterface extends Closeable {
 	 * @return {@code true} if there is no user registered, {@code false} otherwise
 	 */
 	boolean needsDefaultUser();
+
+	boolean addCard(Card card);
+
+	@Nullable List<Card> listCards();
 }

@@ -6,9 +6,10 @@ public class Randoms {
 
 	/**
 	 * Generates new random string
+	 *
 	 * @param char_num new string's length
-	 * @param letters should the new string contain letters
-	 * @param numbers should the new string contain numbers
+	 * @param letters  should the new string contain letters
+	 * @param numbers  should the new string contain numbers
 	 *
 	 * @return random string
 	 */

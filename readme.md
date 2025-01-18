@@ -21,7 +21,7 @@ property of Watch Nebula LLC. Go watch & subscribe at [nebula.tv/jetlag](https:/
 ### Production deployment
 
 1. Download `docker-compose.yml` from the following
-   link [docker-compose.prod.yml](https://github.com/TrailCompass/backend/blob/main/docker-compose.prod.yml)
+   link [docker-compose.prod.yml](https://github.com/TrailCompass/backend/blob/new/docker-compose.prod.yml)
 2. `docker compose up -d` or `docker compose -f <file name> up -d`, depending on if the file is named docker-compose.yml
    or isn't.
 3. Profit

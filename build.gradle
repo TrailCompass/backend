@@ -14,7 +14,7 @@ repositories {
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
-    implementation 'io.javalin:javalin:'+javalinVersion
+    implementation 'io.javalin:javalin:' + javalinVersion
     implementation 'org.json:json:20240303'
     implementation 'ch.qos.logback:logback-core:1.5.13'
     // https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
@@ -23,10 +23,10 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:3.14.0")
     implementation("commons-io:commons-io:2.15.1")
     implementation("org.slf4j:slf4j-simple:2.0.16")
-    implementation 'io.javalin.community.openapi:javalin-openapi-plugin:'+javalinVersion
-    implementation 'io.javalin.community.openapi:javalin-swagger-plugin:'+javalinVersion
+    implementation 'io.javalin.community.openapi:javalin-openapi-plugin:' + javalinVersion
+    implementation 'io.javalin.community.openapi:javalin-swagger-plugin:' + javalinVersion
 
-    annotationProcessor 'io.javalin.community.openapi:openapi-annotation-processor:'+javalinVersion
+    annotationProcessor 'io.javalin.community.openapi:openapi-annotation-processor:' + javalinVersion
 }
 
 jar {
