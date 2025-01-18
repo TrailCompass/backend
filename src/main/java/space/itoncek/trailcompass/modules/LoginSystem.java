@@ -12,7 +12,6 @@ import io.javalin.http.Header;
 import io.javalin.openapi.*;
 import javalinjwt.JWTGenerator;
 import javalinjwt.JWTProvider;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,6 +21,7 @@ import space.itoncek.trailcompass.TrailServer;
 import space.itoncek.trailcompass.objects.Permission;
 import space.itoncek.trailcompass.objects.SimpleUser;
 import space.itoncek.trailcompass.objects.User;
+import static space.itoncek.trailcompass.utils.Randoms.generateRandomString;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ public class LoginSystem {
 	public LoginSystem(TrailServer server) throws SQLException {
 		this.server = server;
 
-		algorithm = Algorithm.HMAC512(generateRandomString());
+		algorithm = Algorithm.HMAC512(generateRandomString(1024, true, true));
 
 		generator = (user, alg) -> {
 			JWTCreator.Builder token = JWT.create()
@@ -48,10 +48,6 @@ public class LoginSystem {
 		};
 		verifier = JWT.require(algorithm).build();
 		provider = new JWTProvider<>(algorithm, generator, verifier);
-	}
-
-	private static String generateRandomString() {
-		return RandomStringUtils.random(1024, true, true);
 	}
 
 	@OpenApi(
@@ -83,7 +79,7 @@ public class LoginSystem {
 		try {
 			JSONObject body = new JSONObject(ctx.body());
 
-			SimpleUser user = server.db.getSimpleUser(body.getString("username"), body.getString("passwordhash"));
+			SimpleUser user = server.db.getUserMeta(body.getString("username"), body.getString("passwordhash"));
 
 			if (user == null) {
 				ctx.status(401).result(new JSONObject().put("error", "Unable to authorize this account, this incident has been reported!").toString(4));
@@ -142,14 +138,14 @@ public class LoginSystem {
 				JSONObject body = new JSONObject(ctx.body());
 
 				int requesterID = decodedJWT.get().getClaim("id").asInt();
-				User requester = server.db.getUser(requesterID);
+				User requester = server.db.getUserByID(requesterID);
 
 				if (requester == null || !requester.hasPermission(Permission.ADD_USERS)) {
 					ctx.status(400).result(new JSONObject().put("error", "Neplatný token!").toString(4));
 					return;
 				}
 
-				if (server.db.createUser(body.getString("name"), body.getString("passwordhash"), parsePermissions(body.getJSONArray("permissions")))) {
+				if (server.db.createUser(body.getString("name"), body.getString("passwordhash"))) {
 					ctx.status(200).result("ok");
 				} else {
 					ctx.status(500).result("DB error");
@@ -209,6 +205,6 @@ public class LoginSystem {
 		}
 
 		int requesterID = decodedJWT.get().getClaim("id").asInt();
-		return server.db.getUser(requesterID);
+		return server.db.getUserByID(requesterID);
 	}
 }
