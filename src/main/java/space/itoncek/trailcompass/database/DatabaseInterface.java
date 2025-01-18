@@ -2,7 +2,7 @@ package space.itoncek.trailcompass.database;
 
 import org.jetbrains.annotations.Nullable;
 import space.itoncek.trailcompass.objects.Card;
-import space.itoncek.trailcompass.objects.SimpleUser;
+import space.itoncek.trailcompass.objects.UserMeta;
 import space.itoncek.trailcompass.objects.User;
 
 import java.io.Closeable;
@@ -29,9 +29,9 @@ public interface DatabaseInterface extends Closeable {
 	 * @param username     username of the requested user
 	 * @param passwordhash SHA256-hash of the user's password
 	 *
-	 * @return {@link SimpleUser} object, can be null
+	 * @return {@link UserMeta} object, can be null
 	 */
-	@Nullable SimpleUser getUserMeta(String username, String passwordhash);
+	@Nullable UserMeta getUserMeta(String username, String passwordhash);
 
 	/**
 	 * Creates a new user in the database. The new user is never marked as an admin.
@@ -59,7 +59,9 @@ public interface DatabaseInterface extends Closeable {
 	 */
 	boolean needsDefaultUser();
 
-	boolean addCard(Card card);
+	boolean addCurse(String title, String description, String casting_cost, int amount_in_deck);
+	boolean addPowerup(String name, String icon, int amount_in_deck);
+	boolean addTimeBonus(String title, int bonus_time, int amount_in_deck);
 
 	@Nullable List<Card> listCards();
 }

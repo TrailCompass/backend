@@ -68,7 +68,7 @@ public class MariaDatabaseImpl implements DatabaseInterface {
 					""");
 
 			stmt.executeUpdate("""
-					CREATE TABLE `card_definitions` (
+					CREATE TABLE IF NOT EXISTS `card_definitions` (
 						`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 						`type` VARCHAR(50) NOT NULL DEFAULT '' COLLATE 'utf8mb4_uca1400_ai_ci',
 						`name` VARCHAR(256) NOT NULL COLLATE 'utf8mb4_uca1400_ai_ci',
@@ -91,12 +91,35 @@ public class MariaDatabaseImpl implements DatabaseInterface {
 
 	@Override
 	public User getUserByID(int id) {
-		return null;
+		try(PreparedStatement stmt = conn.prepareStatement("SELECT * FROM users WHERE user_id=?;")) {
+			stmt.setInt(1,id);
+			ResultSet rs = stmt.executeQuery();
+			if(rs.next()) {
+				return new User(rs.getInt("user_id"), rs.getString("user_nickname"),rs.getBoolean("user_isadmin"), rs.getBoolean("user_ishider"));
+			} else {
+				return null;
+			}
+		} catch (SQLException e) {
+			log.error("Unable to get user from database! ",e);
+			return null;
+		}
 	}
 
 	@Override
-	public SimpleUser getUserMeta(String username, String passwordhash) {
-		return null;
+	public UserMeta getUserMeta(String username, String passwordhash) {
+		try(PreparedStatement stmt = conn.prepareStatement("SELECT * FROM users WHERE user_nickname=? AND user_passwordhash=?;")) {
+			stmt.setString(1,username);
+			stmt.setString(2,passwordhash);
+			ResultSet rs = stmt.executeQuery();
+			if(rs.next()) {
+				return new UserMeta(rs.getInt("user_id"), System.currentTimeMillis() + 600000);
+			} else {
+				return null;
+			}
+		} catch (SQLException e) {
+			log.error("Unable to get user meta from database! ",e);
+			return null;
+		}
 	}
 
 	@Override
@@ -105,8 +128,16 @@ public class MariaDatabaseImpl implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean createUser(String name, String passwordhash, boolean isAdmin) {
-		return false;
+	public boolean createUser(String nickname, String passwordhash, boolean isAdmin) {
+		try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO users (user_nickname, user_passwordhash, user_isadmin) VALUES (?,?,?);")) {
+			stmt.setString(1,nickname);
+			stmt.setString(2, passwordhash);
+			stmt.setBoolean(3, isAdmin);
+			return stmt.executeUpdate()>0;
+		} catch (SQLException e) {
+			log.error("Unable to save user into the database!");
+			return false;
+		}
 	}
 
 	@Override
@@ -121,38 +152,41 @@ public class MariaDatabaseImpl implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean addCard(Card card) {
-		String sql = switch (card.getType()) {
-			case CURSE ->
-					"INSERT INTO card_definitions (type,name,description,casting_cost,amount_in_deck) VALUES (?,?,?,?,?);";
-			case POWERUP -> "INSERT INTO card_definitions (type,name,icon,amount_in_deck) VALUES (?,?,?,?);";
-			case TIME_BONUS -> "INSERT INTO card_definitions (type,name,bonus_time,amount_in_deck) VALUES (?,?,?,?)";
-		};
-		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-			switch (card.getType()) {
-				case CURSE -> {
-					Curse c = (Curse) card;
-					stmt.setString(1, CardType.CURSE.name());
-					stmt.setString(2, c.title());
-					stmt.setString(3, c.description());
-					stmt.setString(4, c.casting_cost());
-					stmt.setInt(5, c.amount_in_deck());
-				}
-				case POWERUP -> {
-					Powerup c = (Powerup) card;
-					stmt.setString(1, CardType.CURSE.name());
-					stmt.setString(2, c.name());
-					stmt.setString(3, c.icon());
-					stmt.setInt(4, c.amount_in_deck());
-				}
-				case TIME_BONUS -> {
-					TimeBonus c = (TimeBonus) card;
-					stmt.setString(1, CardType.CURSE.name());
-					stmt.setString(2, c.name());
-					stmt.setInt(3, c.bonus_time());
-					stmt.setInt(4, c.amount_in_deck());
-				}
-			}
+	public boolean addCurse(String title, String description, String casting_cost, int amount_in_deck) {
+		try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO card_definitions (type,name,description,casting_cost,amount_in_deck) VALUES (?,?,?,?,?);")) {
+			stmt.setString(1, CardType.CURSE.name());
+			stmt.setString(2, title);
+			stmt.setString(3, description);
+			stmt.setString(4, casting_cost);
+			stmt.setInt(5, amount_in_deck);
+			return stmt.executeUpdate() > 0;
+		} catch (SQLException e) {
+			log.error("Unable to save a card!", e);
+			return false;
+		}
+	}
+
+	@Override
+	public boolean addPowerup(String title, String icon, int amount_in_deck) {
+		try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO card_definitions (type,name,icon,amount_in_deck) VALUES (?,?,?,?);")) {
+			stmt.setString(1, CardType.CURSE.name());
+			stmt.setString(2, title);
+			stmt.setString(3, icon);
+			stmt.setInt(4, amount_in_deck);
+			return stmt.executeUpdate() > 0;
+		} catch (SQLException e) {
+			log.error("Unable to save a card!", e);
+			return false;
+		}
+	}
+
+	@Override
+	public boolean addTimeBonus(String title, int bonus_time, int amount_in_deck) {
+		try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO card_definitions (type,name,bonus_time,amount_in_deck) VALUES (?,?,?,?)")) {
+			stmt.setString(1, CardType.CURSE.name());
+			stmt.setString(2,title);
+			stmt.setInt(3, bonus_time);
+			stmt.setInt(4, amount_in_deck);
 			return stmt.executeUpdate() > 0;
 		} catch (SQLException e) {
 			log.error("Unable to save a card!", e);

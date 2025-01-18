@@ -61,8 +61,10 @@ public class TrailServer {
 					get("verifyLogin", login::verifyLogin);
 				});
 				path("setup", () -> {
-					post("addCurse", setup::addCard);
-					get("listCurses", setup::listCards);
+					post("addCurse", setup::addCurse);
+					post("addPowerup", setup::addPowerup);
+					post("addTimeBonus", setup::addTimeBonus);
+					get("listCards", setup::listCards);
 				});
 			});
 		});
@@ -101,7 +103,11 @@ public class TrailServer {
 		if (db.needsDefaultUser()) {
 			String user = generateRandomString(10, true, false);
 			String password = generateRandomString(16, true, false);
-			db.createUser(user, password, true);
+			if (db.createUser(user, password, true)) {
+				log.info("New user created successfully");
+			} else {
+				log.error("Failed to create new user!");
+			}
 			log.info(TextGraphics.generateLoginBox(user, password));
 		}
 	}

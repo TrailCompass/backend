@@ -9,15 +9,17 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import io.javalin.http.Context;
 import io.javalin.http.HandlerType;
 import io.javalin.http.Header;
+import io.javalin.http.HttpStatus;
 import io.javalin.openapi.*;
 import javalinjwt.JWTGenerator;
 import javalinjwt.JWTProvider;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.TrailServer;
-import space.itoncek.trailcompass.objects.SimpleUser;
+import space.itoncek.trailcompass.objects.UserMeta;
 import space.itoncek.trailcompass.objects.User;
 import static space.itoncek.trailcompass.utils.Randoms.generateRandomString;
 
@@ -27,9 +29,9 @@ import java.util.Optional;
 public class LoginSystem {
 	private static final Logger log = LoggerFactory.getLogger(LoginSystem.class);
 	public static Algorithm algorithm;
-	public static JWTGenerator<SimpleUser> generator;
+	public static JWTGenerator<UserMeta> generator;
 	public static JWTVerifier verifier;
-	public static JWTProvider<SimpleUser> provider;
+	public static JWTProvider<UserMeta> provider;
 	private final TrailServer server;
 
 	public LoginSystem(TrailServer server) throws SQLException {
@@ -76,7 +78,7 @@ public class LoginSystem {
 		try {
 			JSONObject body = new JSONObject(ctx.body());
 
-			SimpleUser user = server.db.getUserMeta(body.getString("username"), body.getString("passwordhash"));
+			UserMeta user = server.db.getUserMeta(body.getString("username"), body.getString("passwordhash"));
 
 			if (user == null) {
 				ctx.status(401).result(new JSONObject().put("error", "Unable to authorize this account, this incident has been reported!").toString(4));
@@ -102,7 +104,7 @@ public class LoginSystem {
 			tags = {"UAC"},
 			requestBody = @OpenApiRequestBody(description = "Body containing username, SHA-512'd password and permissions", content = @OpenApiContent(mimeType = "application/json", example = """
 					{
-						"name":"dan",
+						"title":"dan",
 						"passwordhash": "a58e0ac7c87a679ca4bd18593f0efc4208b9ea812e7e1b27f57b969d3c527fd43f06b6ccc76baaa88f3340f563699fd6b79b5a72295076702759ac2238436844",
 						"permissions": [
 							"ADMIN",
@@ -125,69 +127,76 @@ public class LoginSystem {
 			security = @OpenApiSecurity(name = "JWT")
 	)
 	public void register(Context ctx) {
-		if (ctx.status().getCode() != 401) {
-			try {
-				Optional<DecodedJWT> decodedJWT = provider.validateToken(ctx.header(Header.AUTHORIZATION).substring(7));
-				if (decodedJWT.isEmpty()) {
-					ctx.status(400).result(new JSONObject().put("error", "Neplatný token!").toString(4));
-					return;
-				}
-				JSONObject body = new JSONObject(ctx.body());
-
-				int requesterID = decodedJWT.get().getClaim("id").asInt();
-				User requester = server.db.getUserByID(requesterID);
-
-				if (requester == null || !requester.admin()) {
-					ctx.status(400).result(new JSONObject().put("error", "Neplatný token!").toString(4));
-					return;
-				}
-
-				if (server.db.createUser(body.getString("name"), body.getString("passwordhash"))) {
-					ctx.status(200).result("ok");
-				} else {
-					ctx.status(500).result("DB error");
-				}
-
-			} catch (JSONException | AlgorithmMismatchException | SignatureVerificationException |
-					 TokenExpiredException | MissingClaimException | IncorrectClaimException e) {
-				ctx.status(400).result(new JSONObject().put("error", "Neplatný dotaz!").toString(4));
+		if (ctx.status() == HttpStatus.UNAUTHORIZED || ctx.status() == HttpStatus.IM_A_TEAPOT) return;
+		try {
+			Optional<DecodedJWT> decodedJWT = provider.validateToken(ctx.header(Header.AUTHORIZATION).substring(7));
+			if (decodedJWT.isEmpty()) {
+				ctx.status(400).result(new JSONObject().put("error", "Neplatný token!").toString(4));
+				return;
 			}
+			JSONObject body = new JSONObject(ctx.body());
+
+			int requesterID = decodedJWT.get().getClaim("id").asInt();
+			User requester = server.db.getUserByID(requesterID);
+
+			if (requester == null || !requester.admin()) {
+				ctx.status(400).result(new JSONObject().put("error", "Neplatný token!").toString(4));
+				return;
+			}
+
+			if (server.db.createUser(body.getString("title"), body.getString("passwordhash"))) {
+				ctx.status(200).result("ok");
+			} else {
+				ctx.status(500).result("DB error");
+			}
+
+		} catch (JSONException | AlgorithmMismatchException | SignatureVerificationException |
+				 TokenExpiredException | MissingClaimException | IncorrectClaimException e) {
+			ctx.status(400).result(new JSONObject().put("error", "Neplatný dotaz!").toString(4));
 		}
 	}
 
 	public void verifyLogin(Context ctx) {
-		if (ctx.status().getCode() != 401) {
-			try {
-				Optional<DecodedJWT> decodedJWT = provider.validateToken(ctx.header("Token"));
-				if (decodedJWT.isPresent()) {
-					JSONObject resp = new JSONObject();
-					resp.put("name", decodedJWT.get().getClaim("name").asString());
-					resp.put("id", decodedJWT.get().getClaim("id").asInt());
-					ctx.status(200).result(resp.toString(4));
-				} else {
-					ctx.status(400).result(new JSONObject().put("error", "Neplatný token!").toString(4));
-				}
-			} catch (JSONException | AlgorithmMismatchException | SignatureVerificationException |
-					 TokenExpiredException | MissingClaimException | IncorrectClaimException e) {
-				ctx.status(400).result(new JSONObject().put("error", "Neplatný token!").toString(4));
+		if (ctx.status() == HttpStatus.UNAUTHORIZED || ctx.status() == HttpStatus.IM_A_TEAPOT) return;
+		try {
+			Optional<DecodedJWT> decodedJWT = provider.validateToken(ctx.header("Token"));
+			if (decodedJWT.isPresent()) {
+				JSONObject resp = new JSONObject();
+				resp.put("title", decodedJWT.get().getClaim("title").asString());
+				resp.put("id", decodedJWT.get().getClaim("id").asInt());
+				ctx.status(200).result(resp.toString(4));
+			} else {
+				ctx.status(HttpStatus.UNAUTHORIZED).result("Neplatný token!");
 			}
+		} catch (JSONException | AlgorithmMismatchException | SignatureVerificationException |
+				 TokenExpiredException | MissingClaimException | IncorrectClaimException e) {
+			ctx.status(HttpStatus.UNAUTHORIZED).result("Neplatný token!");
 		}
+
 	}
 
 	public void checkTokenValidity(Context h) {
 		if ((h.method() == HandlerType.POST) && !(h.path().startsWith("/uac/login") || h.path().equals("/uac/verifyLogin"))) {
 			try {
 				String header = h.header(Header.AUTHORIZATION);
-				if (header == null) throw new MissingClaimException(h.ip());
-				else verifier.verify(header.substring(7));
+				if (header == null) {
+					throw new MissingClaimException(h.ip());
+				}
+
+				DecodedJWT verify = verifier.verify(header.substring(7));
+
+				log.info(verify.getClaim("validuntil").asLong() + " x " + System.currentTimeMillis());
+				if (verify.getClaim("validuntil").asLong() < System.currentTimeMillis()) {
+					h.status(HttpStatus.IM_A_TEAPOT).result("expired");
+				}
 			} catch (JSONException | AlgorithmMismatchException | SignatureVerificationException |
 					 TokenExpiredException | MissingClaimException | IncorrectClaimException e) {
-				h.status(401).result(new JSONObject().put("error", "Neplatný token!").toString(4));
+				h.status(HttpStatus.UNAUTHORIZED).result("Neplatný token!");
 			}
 		}
 	}
 
-	public User getUser(Context ctx) {
+	public @Nullable User getUser(Context ctx) {
 		Optional<DecodedJWT> decodedJWT = provider.validateToken(ctx.header(Header.AUTHORIZATION).substring(7));
 		if (decodedJWT.isEmpty()) {
 			return null;
