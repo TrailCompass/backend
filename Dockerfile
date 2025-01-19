@@ -2,7 +2,7 @@
 # ref: https://docs.docker.com/develop/develop-images/multistage-build/
     
 # temp container to build using gradle
-FROM gradle:alpine AS TEMP_BUILD_IMAGE
+FROM gradle:alpine AS build
 ENV APP_HOME=/usr/app/
 WORKDIR $APP_HOME
 COPY build.gradle settings.gradle $APP_HOME
@@ -18,13 +18,17 @@ COPY . .
 RUN gradle clean build
     
 # actual container
-FROM eclipse-temurin:21-jdk-alpine as production
-ENV ARTIFACT_NAME=backend_java-1.0-SNAPSHOT.jar
+FROM eclipse-temurin:21-jdk-alpine AS production
 ENV APP_HOME=/usr/app/
 ENV PORT=8080
     
 WORKDIR $APP_HOME
-COPY --from=TEMP_BUILD_IMAGE $APP_HOME/build/libs/$ARTIFACT_NAME .
-    
+COPY --from=build $APP_HOME/build/libs/backend_java-*.jar $APP_HOME/backend_java.jar
+
+HEALTHCHECK --interval=5m --timeout=3s \
+  CMD curl -f http://localhost:$PORT/health || exit 1
+
+RUN ls -la $APP_HOME
+
 EXPOSE $PORT
-ENTRYPOINT exec java -jar ${ARTIFACT_NAME}
+ENTRYPOINT ["java", "-jar", "backend_java.jar"]

@@ -6,6 +6,7 @@ import space.itoncek.trailcompass.objects.UserMeta;
 import space.itoncek.trailcompass.objects.User;
 
 import java.io.Closeable;
+import java.sql.SQLException;
 import java.util.List;
 
 public interface DatabaseInterface extends Closeable {
@@ -64,4 +65,6 @@ public interface DatabaseInterface extends Closeable {
 	boolean addTimeBonus(String title, int bonus_time, int amount_in_deck);
 
 	@Nullable List<Card> listCards();
+
+	boolean isHealthy() throws SQLException;
 }

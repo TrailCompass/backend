@@ -224,6 +224,11 @@ public class MariaDatabaseImpl implements DatabaseInterface {
 	}
 
 	@Override
+	public boolean isHealthy() throws SQLException {
+		return conn.isValid(2);
+	}
+
+	@Override
 	public void close() throws IOException {
 		try {
 			conn.close();

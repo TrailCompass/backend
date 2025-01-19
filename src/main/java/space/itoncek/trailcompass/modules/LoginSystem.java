@@ -205,4 +205,8 @@ public class LoginSystem {
 		int requesterID = decodedJWT.get().getClaim("id").asInt();
 		return server.db.getUserByID(requesterID);
 	}
+
+	public boolean isHealthy() {
+		return provider != null && verifier != null && generator != null && algorithm != null;
+	}
 }

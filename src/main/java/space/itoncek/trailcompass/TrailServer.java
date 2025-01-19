@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.database.DatabaseInterface;
 import space.itoncek.trailcompass.database.MariaDatabaseImpl;
+import space.itoncek.trailcompass.modules.HealthMonitorModule;
 import space.itoncek.trailcompass.modules.LoginSystem;
 import space.itoncek.trailcompass.modules.SetupModule;
 import static space.itoncek.trailcompass.utils.Randoms.generateRandomString;
@@ -24,6 +25,7 @@ public class TrailServer {
 	public final SetupModule setup;
 	public final DatabaseInterface db;
 	private final int PORT = System.getenv("PORT") == null ? 8080 : Integer.parseInt(System.getenv("PORT"));
+	private final HealthMonitorModule healthMonitor;
 	Javalin app;
 
 	public TrailServer() {
@@ -43,12 +45,16 @@ public class TrailServer {
 
 		setup = new SetupModule(this);
 
+		//send to bottom!
+		healthMonitor = new HealthMonitorModule(this);
+
 		app = Javalin.create(cfg -> {
 			cfg.http.gzipOnlyCompression(9);
 			cfg.http.prefer405over404 = true;
 			cfg.router.ignoreTrailingSlashes = true;
 			cfg.router.treatMultipleSlashesAsSingleSlash = true;
 			cfg.router.caseInsensitiveRoutes = true;
+			cfg.showJavalinBanner = false;
 			if (dev) {
 				cfg.registerPlugin(new OpenApiPlugin(TrailServer::setupOpenApi));
 				cfg.registerPlugin(new SwaggerPlugin());
@@ -66,6 +72,7 @@ public class TrailServer {
 					post("addTimeBonus", setup::addTimeBonus);
 					get("listCards", setup::listCards);
 				});
+				get("health", healthMonitor::check);
 			});
 		});
 	}
@@ -99,6 +106,7 @@ public class TrailServer {
 
 	private void start() throws SQLException {
 		app.start(PORT);
+		log.info(TextGraphics.generateIntroMural());
 		db.migrate();
 		if (db.needsDefaultUser()) {
 			String user = generateRandomString(10, true, false);

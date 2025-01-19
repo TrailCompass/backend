@@ -30,6 +30,8 @@ services:
       - "8080:8080"
     networks:
       - internal-network
+    healthcheck:
+      test: ["CMD", "curl","-f","http://localhost:$PORT/health","||","exit","1"]
 
 volumes:
   mariadb-volume:

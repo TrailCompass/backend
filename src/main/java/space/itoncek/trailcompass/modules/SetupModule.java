@@ -9,6 +9,7 @@ import space.itoncek.trailcompass.TrailServer;
 import space.itoncek.trailcompass.objects.*;
 
 import java.util.List;
+import java.util.Objects;
 
 public class SetupModule {
 	private final TrailServer server;
@@ -91,6 +92,17 @@ public class SetupModule {
 		ctx.status(HttpStatus.OK).result(deck.toString(4));
 	}
 
+	public void addRequestCategory(@NotNull Context ctx) {
+
+	}
+
+	public void addRequest(@NotNull Context ctx) {
+
+	}
+
+	public void listRequest(@NotNull Context ctx) {
+
+	}
 
 	private boolean notCorrect(Context ctx) {
 		if (ctx.status() == HttpStatus.UNAUTHORIZED || ctx.status() == HttpStatus.IM_A_TEAPOT) return true;
@@ -103,5 +115,9 @@ public class SetupModule {
 			return true;
 		}
 		return false;
+	}
+
+	public boolean isHealthy() {
+		return true;
 	}
 }
