@@ -61,9 +61,11 @@ public interface DatabaseInterface extends Closeable {
 	boolean needsDefaultUser();
 
 	boolean addCurse(String title, String description, String casting_cost, int amount_in_deck);
-	boolean addRequest(String title, String description, String svg_icon);
 	boolean addPowerup(String name, String icon, int amount_in_deck);
 	boolean addTimeBonus(String title, int bonus_time, int amount_in_deck);
+
+	boolean addRequest(String title, String description, String svg_icon);
+	boolean addRequestCategory(String title, int draw_cards, int pick_card);
 
 	@Nullable List<Card> listCards();
 
