@@ -167,9 +167,9 @@ public class MariaDatabaseImpl implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean addRequest(String title, String description, String svg_icon) {
-		try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO request_types (request_class_id,name,description,svg_icon_url) VALUES (?,?,?,?,?);")) {
-			stmt.setString(1, "0"); // TODO: Implement this
+	public boolean addRequest(int requestClass, String title, String description, String svg_icon) {
+		try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO request_types (request_class_id,name,description,svg_icon_url) VALUES (?,?,?,?);")) {
+			stmt.setInt(1, requestClass);
 			stmt.setString(2, title);
 			stmt.setString(3, description);
 			stmt.setString(4, svg_icon);
@@ -181,15 +181,14 @@ public class MariaDatabaseImpl implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean addRequestCategory(String title, int draw_cards, int pick_card) {
-		try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO request_classes (class_id,class_name,class_draw_cards,class_pick_card) VALUES (?,?,?,?,?);")) {
-			stmt.setString(1, "0"); // TODO: Implement this
-			stmt.setString(2, title);
-			stmt.setInt(3, draw_cards);
-			stmt.setInt(4, pick_card);
+	public boolean addRequestClass(String title, int draw_cards, int pick_card) {
+		try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO request_classes (class_name,class_draw_cards,class_pick_card) VALUES (?,?,?);")) {
+			stmt.setString(1, title);
+			stmt.setInt(2, draw_cards);
+			stmt.setInt(3, pick_card);
 			return stmt.executeUpdate() > 0;
 		} catch (SQLException e) {
-			log.error("Unable to save a request!", e);
+			log.error("Unable to save a request class!", e);
 			return false;
 		}
 	}
