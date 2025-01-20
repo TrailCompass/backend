@@ -167,6 +167,20 @@ public class MariaDatabaseImpl implements DatabaseInterface {
 	}
 
 	@Override
+	public boolean addRequest(String title, String description, String svg_icon) {
+		try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO request_types (request_class_id,name,description,svg_icon_url) VALUES (?,?,?,?,?);")) {
+			stmt.setString(1, "0"); // TODO: Implement this
+			stmt.setString(2, title);
+			stmt.setString(3, description);
+			stmt.setString(4, svg_icon);
+			return stmt.executeUpdate() > 0;
+		} catch (SQLException e) {
+			log.error("Unable to save a request!", e);
+			return false;
+		}
+	}
+
+	@Override
 	public boolean addPowerup(String title, String icon, int amount_in_deck) {
 		try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO card_definitions (type,name,icon,amount_in_deck) VALUES (?,?,?,?);")) {
 			stmt.setString(1, CardType.CURSE.name());
