@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'space.itoncek.trailcompass'
-version = 'v0.0.0.3'
+version = parent.version
 
 String javalinVersion = "6.4.0"
 
@@ -12,17 +12,17 @@ repositories {
 }
 
 dependencies {
+    implementation project(':api')
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
-    implementation 'io.javalin:javalin:' + javalinVersion
+    implementation ('io.javalin:javalin:' + javalinVersion)
     implementation 'org.json:json:20240303'
-    implementation 'ch.qos.logback:logback-core:1.5.13'
+    implementation 'ch.qos.logback:logback-classic:1.5.16'
     // https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
     implementation 'org.mariadb.jdbc:mariadb-java-client:3.5.1'
     implementation("com.github.kmehrunes:javalin-jwt:0.7.0")
     implementation("org.apache.commons:commons-lang3:3.14.0")
     implementation("commons-io:commons-io:2.15.1")
-    implementation("org.slf4j:slf4j-simple:2.0.16")
     implementation 'io.javalin.community.openapi:javalin-openapi-plugin:' + javalinVersion
     implementation 'io.javalin.community.openapi:javalin-swagger-plugin:' + javalinVersion
 

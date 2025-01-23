@@ -12,9 +12,11 @@ import space.itoncek.trailcompass.database.MariaDatabaseImpl;
 import space.itoncek.trailcompass.modules.HealthMonitorModule;
 import space.itoncek.trailcompass.modules.LoginSystem;
 import space.itoncek.trailcompass.modules.SetupModule;
+import space.itoncek.trailcompass.packages.PackageLoader;
 import static space.itoncek.trailcompass.utils.Randoms.generateRandomString;
 import space.itoncek.trailcompass.utils.TextGraphics;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 
@@ -24,6 +26,7 @@ public class TrailServer {
 	public final LoginSystem login;
 	public final SetupModule setup;
 	public final DatabaseInterface db;
+	public final PackageLoader packageLoader;
 	private final int PORT = System.getenv("PORT") == null ? 8080 : Integer.parseInt(System.getenv("PORT"));
 	private final HealthMonitorModule healthMonitor;
 	Javalin app;
@@ -46,6 +49,13 @@ public class TrailServer {
 		setup = new SetupModule(this);
 
 		//send to bottom!
+		packageLoader = new PackageLoader(this);
+		try {
+			packageLoader.loadPlugins(new File("./plugins/"));
+		} catch (Exception e) {
+			log.error("Unable to load plugins");
+			throw new RuntimeException(e);
+		}
 		healthMonitor = new HealthMonitorModule(this);
 
 		app = Javalin.create(cfg -> {
@@ -106,6 +116,7 @@ public class TrailServer {
 
 	private void start() throws SQLException {
 		app.start(PORT);
+		packageLoader.loadPlugins();
 		log.info(TextGraphics.generateIntroMural());
 		db.migrate();
 		if (db.needsDefaultUser()) {
@@ -121,6 +132,7 @@ public class TrailServer {
 	}
 
 	private void stop() throws IOException {
+		packageLoader.unloadPlugins();
 		app.stop();
 		db.close();
 	}
