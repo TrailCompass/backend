@@ -3,8 +3,6 @@ name: Java CI with Gradle
 on:
   push:
     branches: [ "new" ]
-  pull_request:
-    branches: [ "new" ]
 
 jobs:
   build:
@@ -30,8 +28,14 @@ jobs:
       - name: Build with Gradle Wrapper
         run: ./gradlew build
 
-      - name: Build with Gradle Wrapper
+      - name: Test
         run: ./gradlew test
+
+      # Publish to GitHub Packages
+      - name: Publish to GitHub Packages
+        run: ./gradlew :api:publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   dependency-submission:
     runs-on: ubuntu-latest
