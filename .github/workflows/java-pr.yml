@@ -1,8 +1,8 @@
 name: Java CI with Gradle
 
 on:
-  pull-request:
-    branch: ["new"]
+  pull_request:
+    branches: [ "new" ]
 
 jobs:
   build:
