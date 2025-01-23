@@ -9,7 +9,7 @@ services:
       MARIADB_DATABASE: tc_system
       MARIADB_RANDOM_ROOT_PASSWORD: true
     volumes:
-      - mariadb-volume:/var/lib/mysql:Z
+      - "mariadb-volume:/var/lib/mysql:Z"
     healthcheck:
       test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
       start_period: 10s
@@ -26,12 +26,25 @@ services:
       - MARIA_DB=tc_system
       - MARIA_USER=trailcompass
       - MARIA_PASSWORD=trailcompass
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
+    volumes:
+      - "server-plugins:/usr/app/plugins"
     ports:
       - "8080:8080"
     networks:
       - internal-network
+    healthcheck:
+      test: ["CMD", "curl","-f","http://localhost:$PORT/health","||","exit","1"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 volumes:
   mariadb-volume:
+  server-plugins:
 networks:
   internal-network:

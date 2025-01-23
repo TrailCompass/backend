@@ -3,32 +3,30 @@
     
 # temp container to build using gradle
 FROM gradle:alpine AS build
-ENV APP_HOME=/usr/app/
+ENV APP_HOME=/usr/app
 WORKDIR $APP_HOME
-COPY build.gradle settings.gradle $APP_HOME
-  
-COPY gradle $APP_HOME/gradle
-COPY --chown=gradle:gradle . /home/gradle/src
+
+COPY --chown=gradle:gradle . $APP_HOME/
 USER root
-RUN chown -R gradle /home/gradle/src
-    
-RUN gradle build || return 0
+RUN chmod +x $APP_HOME/gradlew
+RUN cd $APP_HOME
 COPY . .
 
-RUN gradle clean build
+RUN gradle server:clean server:build
+RUN ls -lh $APP_HOME/server/build/libs
     
 # actual container
 FROM eclipse-temurin:21-jdk-alpine AS production
-ENV APP_HOME=/usr/app/
+ENV APP_HOME=/usr/app
 ENV PORT=8080
     
 WORKDIR $APP_HOME
-COPY --from=build $APP_HOME/build/libs/backend_java-*.jar $APP_HOME/backend_java.jar
+COPY --from=build $APP_HOME/server/build/libs/server-*.jar $APP_HOME/server.jar
+RUN mkdir "/usr/app/plugins"
 
 HEALTHCHECK --interval=5m --timeout=3s \
   CMD curl -f http://localhost:$PORT/health || exit 1
 
-RUN ls -la $APP_HOME
-
 EXPOSE $PORT
-ENTRYPOINT ["java", "-jar", "backend_java.jar"]
+VOLUME ["/usr/app/plugins"]
+ENTRYPOINT ["java", "-jar", "server.jar"]
