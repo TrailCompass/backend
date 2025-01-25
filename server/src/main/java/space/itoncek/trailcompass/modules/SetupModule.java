@@ -9,7 +9,6 @@ import space.itoncek.trailcompass.TrailServer;
 import space.itoncek.trailcompass.objects.*;
 
 import java.util.List;
-import java.util.Objects;
 
 public class SetupModule {
 	private final TrailServer server;
@@ -93,11 +92,27 @@ public class SetupModule {
 	}
 
 	public void addRequestCategory(@NotNull Context ctx) {
+		if(notCorrect(ctx)) return;
 
+		JSONObject body = new JSONObject(ctx.body());
+
+		if (server.db.addRequestClass(body.getString("name"),body.getInt("draw_cards"), body.getInt("pick_cards"))) {
+			ctx.status(HttpStatus.OK).result("ok");
+		} else {
+			ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("DB Access error!");
+		}
 	}
 
 	public void addRequest(@NotNull Context ctx) {
+		if(notCorrect(ctx)) return;
 
+		JSONObject body = new JSONObject(ctx.body());
+
+		if (server.db.addRequest(body.getInt("classID"), body.getString("name"), body.getString("description"), body.getString("svg_icon_url"))) {
+			ctx.status(HttpStatus.OK).result("ok");
+		} else {
+			ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).result("DB Access error!");
+		}
 	}
 
 	public void listRequest(@NotNull Context ctx) {

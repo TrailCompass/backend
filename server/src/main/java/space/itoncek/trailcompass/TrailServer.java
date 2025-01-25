@@ -81,6 +81,9 @@ public class TrailServer {
 					post("addPowerup", setup::addPowerup);
 					post("addTimeBonus", setup::addTimeBonus);
 					get("listCards", setup::listCards);
+
+					post("addRequestCategory", setup::addRequestCategory);
+					post("addRequest", setup::addRequest);
 				});
 				get("health", healthMonitor::check);
 			});
