@@ -14,6 +14,7 @@ public interface Package {
 	 * <p><b>NO LOGIC SHOULD BE DONE IN HERE! THE SERVER IS PROBABLY NOT READY!</b>
 	 * <p>This method should only save the input parameters into variables and return without doing any logic.
 	 * @param logger SLF4J-class logger, supplied by the server
+	 * @param locationSupplier {@link LocationSupplier}, supplying current player locations
 	 */
 	void onLoad(Logger logger, LocationSupplier locationSupplier);
 
@@ -23,11 +24,17 @@ public interface Package {
 	void onEnable();
 
 	/**
-	 * This method defines the cards, this plugin supplied
+	 * This method defines the cards, this plugin supplies
 	 * @hidden  Needs to be decided, whether this method should be called only once or any time the server is requesting cards.
 	 * @return List of cards to be registered in the game.
 	 */
 	List<Card> getCards();
+
+	/**
+	 * This method defines the request classes, this plugin supplies
+	 * @hidden  Needs to be decided, whether this method should be called only once or any time the server is requesting cards.
+	 * @return List of request classes to be registered in the game.
+	 */
 	List<RequestCategory> getRequestCategories();
 
 	/**

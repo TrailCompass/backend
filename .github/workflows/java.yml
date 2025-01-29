@@ -27,11 +27,8 @@ jobs:
       - name: Make ./gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build with Gradle Wrapper
-        run: ./gradlew build
-
-      - name: Test
-        run: ./gradlew test
+      - name: Test and build with Gradle Wrapper
+        run: ./gradlew clean test build
 
   dependency-submission:
     runs-on: ubuntu-latest
