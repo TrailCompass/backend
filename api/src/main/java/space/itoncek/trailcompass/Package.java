@@ -1,6 +1,7 @@
 package space.itoncek.trailcompass;
 
 import org.slf4j.Logger;
+import space.itoncek.trailcompass.objects.LocationSupplier;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ public interface Package {
 	 * <p>This method should only save the input parameters into variables and return without doing any logic.
 	 * @param logger SLF4J-class logger, supplied by the server
 	 */
-	void onLoad(Logger logger);
+	void onLoad(Logger logger, LocationSupplier locationSupplier);
 
 	/**
 	 * Gets called on server startup. Server is ready to interact with clients, preliminary setup shall be done in this method.
@@ -27,6 +28,7 @@ public interface Package {
 	 * @return List of cards to be registered in the game.
 	 */
 	List<Card> getCards();
+	List<RequestCategory> getRequestCategories();
 
 	/**
 	 * Gets called on server shutdown. Any open connection shall be closed here. After this method returns, this package

@@ -1,6 +1,6 @@
 package space.itoncek.trailcompass.objects;
 
-public record Argument(Type type, String name) {
+public record Argument(Type type, String name, AutofillFlag autofillFlag) {
 	public enum Type {
 		STRING,
 		BOOL,
@@ -13,5 +13,12 @@ public record Argument(Type type, String name) {
 		JSONOBJECT,
 		JSONARRAY,
 		LONG
+	}
+
+	public enum AutofillFlag {
+		GPS_LATTITUDE,
+		GPS_LONGITUDE,
+		GPS_ALTITUDE,
+		NONE
 	}
 }

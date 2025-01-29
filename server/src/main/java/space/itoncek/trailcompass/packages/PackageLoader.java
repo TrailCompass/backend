@@ -42,7 +42,7 @@ public class PackageLoader {
 			Object pluginInstance = clazz.getDeclaredConstructor().newInstance();
 			if (pluginInstance instanceof Package pkg) {
 				pkgs.add(pkg);
-				pkg.onLoad(LoggerFactory.getLogger(meta.packageName()));
+				pkg.onLoad(LoggerFactory.getLogger(meta.packageName()),server.lm.getLocationSupplier());
 			}
 
 			classLoader.close();

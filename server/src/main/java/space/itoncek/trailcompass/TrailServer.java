@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.database.DatabaseInterface;
 import space.itoncek.trailcompass.database.MariaDatabaseImpl;
 import space.itoncek.trailcompass.modules.HealthMonitorModule;
+import space.itoncek.trailcompass.modules.LocationModule;
 import space.itoncek.trailcompass.modules.LoginSystem;
 import space.itoncek.trailcompass.modules.SetupModule;
 import space.itoncek.trailcompass.packages.PackageLoader;
@@ -27,6 +28,7 @@ public class TrailServer {
 	public final SetupModule setup;
 	public final DatabaseInterface db;
 	public final PackageLoader packageLoader;
+	public final LocationModule lm;
 	private final int PORT = System.getenv("PORT") == null ? 8080 : Integer.parseInt(System.getenv("PORT"));
 	private final HealthMonitorModule healthMonitor;
 	Javalin app;
@@ -47,6 +49,7 @@ public class TrailServer {
 		}
 
 		setup = new SetupModule(this);
+		lm = new LocationModule(this);
 
 		//send to bottom!
 		packageLoader = new PackageLoader(this);
