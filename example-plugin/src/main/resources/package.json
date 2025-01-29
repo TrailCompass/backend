@@ -1,4 +1,4 @@
 {
-	"name": "ExamplePlugin",
-	"main": "space.itoncek.trailcompass.ExamplePlugin"
+	"name": "ExamplePackage",
+	"main": "space.itoncek.trailcompass.ExamplePackage"
 }

@@ -11,6 +11,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 
 public class PackageLoader {
+	private boolean isReady = false;
 	private final ArrayList<Package> pkgs = new ArrayList<>();
 	private final TrailServer server;
 
@@ -45,6 +46,7 @@ public class PackageLoader {
 			}
 
 			classLoader.close();
+			isReady =true;
 		}
 	}
 
@@ -67,5 +69,9 @@ public class PackageLoader {
 			pkg.onDisable();
 		}
 		pkgs.clear();
+	}
+
+	public boolean isHealthy() {
+		return isReady;
 	}
 }

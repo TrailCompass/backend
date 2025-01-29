@@ -50,12 +50,14 @@ public class TrailServer {
 
 		//send to bottom!
 		packageLoader = new PackageLoader(this);
+
 		try {
 			packageLoader.loadPlugins(new File("./plugins/"));
 		} catch (Exception e) {
 			log.error("Unable to load plugins");
 			throw new RuntimeException(e);
 		}
+
 		healthMonitor = new HealthMonitorModule(this);
 
 		app = Javalin.create(cfg -> {

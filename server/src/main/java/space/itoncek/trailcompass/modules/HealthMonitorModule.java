@@ -1,6 +1,7 @@
 package space.itoncek.trailcompass.modules;
 
 import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,5 +35,10 @@ public class HealthMonitorModule {
 
 		boolean setup = server.setup.isHealthy();
 		sb.append("Setup: ").append(setup?"✅":"❌").append("\n");
+
+		boolean packages = server.packageLoader.isHealthy();
+		sb.append("Setup: ").append(packages?"✅":"❌").append("\n");
+
+		ctx.status(HttpStatus.OK).result(sb.toString());
 	}
 }

@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 
 import java.util.List;
 
-public class ExamplePlugin implements Package{
+public class ExamplePackage implements Package{
 	private Logger logger;
 
 	@Override
@@ -14,12 +14,12 @@ public class ExamplePlugin implements Package{
 
 	@Override
 	public void onEnable() {
-		logger.info("ExamplePlugin has been loaded");
+		logger.info("ExamplePackage has been loaded");
 	}
 
 	@Override
 	public void onDisable() {
-		logger.info("ExamplePlugin has been unloaded");
+		logger.info("ExamplePackage has been unloaded");
 	}
 
 	@Override
