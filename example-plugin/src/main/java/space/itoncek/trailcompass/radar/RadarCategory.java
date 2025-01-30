@@ -22,21 +22,21 @@ public class RadarCategory implements RequestCategory {
 
 	@Override
 	public String getDescription() {
-		return "Are you within ?km of me?\n";
+		return "Are you within ___km of me?\n";
 	}
 
 	@Override
 	public List<Request> getRequests() {
 		return List.of(
-				new GenericRadar(.5,locsup,l),
-				new GenericRadar(1,locsup,l),
-				new GenericRadar(2,locsup,l),
-				new GenericRadar(5,locsup,l),
-				new GenericRadar(10,locsup,l),
-				new GenericRadar(15,locsup,l),
-				new GenericRadar(50,locsup,l),
-				new GenericRadar(100,locsup,l),
-				new GenericRadar(150,locsup,l)
+				new GenericRadarRequest(.5,locsup,l),
+				new GenericRadarRequest(1,locsup,l),
+				new GenericRadarRequest(2,locsup,l),
+				new GenericRadarRequest(5,locsup,l),
+				new GenericRadarRequest(10,locsup,l),
+				new GenericRadarRequest(15,locsup,l),
+				new GenericRadarRequest(50,locsup,l),
+				new GenericRadarRequest(100,locsup,l),
+				new GenericRadarRequest(150,locsup,l)
 		);
 	}
 }

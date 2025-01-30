@@ -4,6 +4,7 @@ import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.Card;
 import space.itoncek.trailcompass.Package;
 import space.itoncek.trailcompass.TrailServer;
+import space.itoncek.trailcompass.objects.Config;
 
 import java.io.File;
 import java.net.URL;
@@ -42,7 +43,11 @@ public class PackageLoader {
 			Object pluginInstance = clazz.getDeclaredConstructor().newInstance();
 			if (pluginInstance instanceof Package pkg) {
 				pkgs.add(pkg);
-				pkg.onLoad(LoggerFactory.getLogger(meta.packageName()),server.lm.getLocationSupplier());
+				pkg.onLoad(new Config(
+						LoggerFactory.getLogger(meta.packageName()),
+						server.lm.getLocationSupplier(),
+						new File("./packages/" + meta.packageName() + "/")
+				));
 			}
 
 			classLoader.close();

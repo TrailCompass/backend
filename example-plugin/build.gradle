@@ -10,11 +10,15 @@ repositories {
 }
 
 dependencies {
-    implementation project(':api')
+    compileOnly project(':api')
+    testImplementation project(':api')
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation("org.slf4j:slf4j-simple:2.0.16")
     compileOnly("org.slf4j:slf4j-simple:2.0.16")
     compileOnly("org.json:json:20240303")
+    implementation 'com.geodesk:geodesk:0.2.1'
+    implementation 'org.jetbrains:annotations:24.0.0'
 }
 
 test {

@@ -12,7 +12,7 @@ public class LocationModule {
 	}
 
 	public LocationSupplier getLocationSupplier() {
-		return new LocationSupplier(()-> new Location(50.0544700, 14.2905664,0),
-				()-> new Location(50.1089592, 14.5773658,0));
+		return new LocationSupplier(() -> new Location(50.0544700, 14.2905664, 0),
+				() -> new Location(50.1089592, 14.5773658, 0));
 	}
 }

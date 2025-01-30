@@ -55,7 +55,7 @@ public class TrailServer {
 		packageLoader = new PackageLoader(this);
 
 		try {
-			packageLoader.loadPlugins(new File("./plugins/"));
+			packageLoader.loadPlugins(new File("./packages/"));
 		} catch (Exception e) {
 			log.error("Unable to load plugins");
 			throw new RuntimeException(e);

@@ -1,26 +1,28 @@
 package space.itoncek.trailcompass;
 
+import com.geodesk.feature.FeatureLibrary;
 import org.slf4j.Logger;
+import space.itoncek.trailcompass.objects.Config;
 import space.itoncek.trailcompass.objects.LocationSupplier;
 import space.itoncek.trailcompass.radar.RadarCategory;
 
+import java.io.File;
 import java.util.List;
 
 public class ExamplePackage implements Package{
-	private Logger logger;
-	private LocationSupplier locationSupplier;
+	private Config c;
+	private FeatureLibrary flib;
 
 	@Override
-	public void onLoad(Logger logger, LocationSupplier locationSupplier) {
-		this.logger = logger;
-		this.locationSupplier = locationSupplier;
+	public void onLoad(Config cfg) {
+		this.c = cfg;
 	}
 
 	@Override
 	public void onEnable() {
-		logger.info("ExamplePackage has been loaded");
+		c.logger().info("Loading Geodesk database");
+		flib = new FeatureLibrary(new File(c.dataFolder() + "/praha.gol").getPath());
 	}
-
 
 	@Override
 	public List<Card> getCards() {
@@ -29,11 +31,13 @@ public class ExamplePackage implements Package{
 
 	@Override
 	public List<RequestCategory> getRequestCategories() {
-		return List.of(new RadarCategory(locationSupplier,logger));
+		return List.of(new RadarCategory(c.locationSupplier(),c.logger()));
 	}
+
 	@Override
 	public void onDisable() {
-		logger.info("ExamplePackage has been unloaded");
+		flib.close();
+		c.logger().info("ExamplePackage has been unloaded");
 	}
 
 }

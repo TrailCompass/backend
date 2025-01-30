@@ -1,6 +1,7 @@
 package space.itoncek.trailcompass;
 
 import org.slf4j.Logger;
+import space.itoncek.trailcompass.objects.Config;
 import space.itoncek.trailcompass.objects.LocationSupplier;
 
 import java.util.List;
@@ -13,10 +14,9 @@ public interface Package {
 	 * This method acts as the constructor, gets called with necessary objects for optimal experience.
 	 * <p><b>NO LOGIC SHOULD BE DONE IN HERE! THE SERVER IS PROBABLY NOT READY!</b>
 	 * <p>This method should only save the input parameters into variables and return without doing any logic.
-	 * @param logger SLF4J-class logger, supplied by the server
-	 * @param locationSupplier {@link LocationSupplier}, supplying current player locations
+	 * @param cfg Object supplying information access to the package
 	 */
-	void onLoad(Logger logger, LocationSupplier locationSupplier);
+	void onLoad(Config cfg);
 
 	/**
 	 * Gets called on server startup. Server is ready to interact with clients, preliminary setup shall be done in this method.
