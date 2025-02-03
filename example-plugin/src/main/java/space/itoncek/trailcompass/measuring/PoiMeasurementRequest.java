@@ -44,7 +44,6 @@ public class PoiMeasurementRequest implements Request {
 		try {
 			Location hider = ls.getHiderLocation().call();
 			Location seeker = ls.getSeekerLocation().call();
-
 			Optional<Double> hiderDistance = Arrays.stream(flib.nodes(query).toArray(new Feature[0]))
 					.parallel()
 					.map(x -> {
@@ -74,14 +73,25 @@ public class PoiMeasurementRequest implements Request {
 		}
 		return Request.super.predictBool();
 	}
-
+	//Commercial airport
+	//High speed train line
 	public static final String RAILWAY_STATION = "[railway=station]";
 
+	//International border
+	//1st admin border (state)
+	//2nd admin border (county)
+	//4th admin border (borough)
+
+	//sea level (special impl)
+	//body of water
+	//coastline
 	public static final String MOUNTAIN = "[natural=peak]";
+	//park
 
 	public static final String AMUSEMENT_PARK = "[tourism=theme_park]";
 	public static final String ZOO = "[tourism=zoo]";
 	public static final String AQUARIUM = "[tourism=aquarium]";
+	//golf course
 	public static final String MUSEUM = "[tourism=museum]";
 	public static final String CINEMA = "[amenity=cinema]";
 
