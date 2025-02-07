@@ -18,12 +18,12 @@ public class AltitudeMeasurementRequest implements Request {
 
 	@Override
 	public String getName() {
-		return "";
+		return "Altitude";
 	}
 
 	@Override
 	public String getDescription() {
-		return "";
+		return "Is your altitude higher than mine?";
 	}
 
 	@Override
@@ -34,7 +34,7 @@ public class AltitudeMeasurementRequest implements Request {
 	@Override
 	public Optional<Boolean> predictBool() {
 		try {
-			return Optional.of(ls.getSeekerLocation().call().alt() > ls.getHiderLocation().call().alt());
+			return Optional.of(ls.getSeekerLocation().call().alt() < ls.getHiderLocation().call().alt());
 		} catch (Exception e) {
 			l.error("Unable to parse players' locations.",e);
 			return Request.super.predictBool();

@@ -26,12 +26,12 @@ public class PoiMeasurementRequest implements Request {
 	}
 	@Override
 	public String getName() {
-		return "";
+		return "Distance from " + query;
 	}
 
 	@Override
 	public String getDescription() {
-		return "";
+		return "Compared to me, are you closer to _____?";
 	}
 
 	@Override
