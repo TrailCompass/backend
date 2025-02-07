@@ -1,7 +1,10 @@
 package space.itoncek.trailcompass.measuring;
 
+import com.geodesk.feature.FeatureLibrary;
+import org.slf4j.Logger;
 import space.itoncek.trailcompass.Request;
 import space.itoncek.trailcompass.RequestCategory;
+import space.itoncek.trailcompass.objects.LocationSupplier;
 
 import java.util.List;
 
