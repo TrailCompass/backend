@@ -23,6 +23,7 @@ dependencies {
     implementation("com.github.kmehrunes:javalin-jwt:0.7.0")
     implementation("org.apache.commons:commons-lang3:3.14.0")
     implementation("commons-io:commons-io:2.15.1")
+    implementation('com.geodesk:geodesk:0.2.1')
     implementation 'io.javalin.community.openapi:javalin-openapi-plugin:' + javalinVersion
     implementation 'io.javalin.community.openapi:javalin-swagger-plugin:' + javalinVersion
 

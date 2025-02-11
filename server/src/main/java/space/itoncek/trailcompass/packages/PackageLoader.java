@@ -1,5 +1,6 @@
 package space.itoncek.trailcompass.packages;
 
+import com.geodesk.feature.FeatureLibrary;
 import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.Card;
 import space.itoncek.trailcompass.Package;
@@ -46,7 +47,8 @@ public class PackageLoader {
 				pkg.onLoad(new Config(
 						LoggerFactory.getLogger(meta.packageName()),
 						server.lm.getLocationSupplier(),
-						new File("./packages/" + meta.packageName() + "/")
+						new File("./packages/" + meta.packageName() + "/"),
+						new FeatureLibrary("./packages/" + meta.packageName() + "/featurelib.gol")
 				));
 			}
 
