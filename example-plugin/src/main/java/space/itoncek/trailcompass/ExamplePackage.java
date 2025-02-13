@@ -22,7 +22,7 @@ public class ExamplePackage implements Package{
 	@Override
 	public void onEnable() {
 		c.logger().info("Loading Geodesk database");
-		flib = new FeatureLibrary(new File(c.dataFolder() + "/praha.gol").getPath());
+		flib = c.featureLibrary();
 	}
 
 	@Override

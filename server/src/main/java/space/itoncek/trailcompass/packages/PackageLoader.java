@@ -31,6 +31,7 @@ public class PackageLoader {
 		if (jars == null) return;
 
 		for (File jar : jars) {
+			if(jar.isDirectory()) continue;
 			URLClassLoader classLoader = new URLClassLoader(
 					new URL[]{jar.toURI().toURL()},
 					this.getClass().getClassLoader()

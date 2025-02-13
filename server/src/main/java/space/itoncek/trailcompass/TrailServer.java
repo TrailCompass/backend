@@ -2,9 +2,16 @@ package space.itoncek.trailcompass;
 
 import io.javalin.Javalin;
 import static io.javalin.apibuilder.ApiBuilder.*;
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
+import io.javalin.openapi.HttpMethod;
+import io.javalin.openapi.OpenApi;
+import io.javalin.openapi.OpenApiContent;
+import io.javalin.openapi.OpenApiResponse;
 import io.javalin.openapi.plugin.OpenApiPlugin;
 import io.javalin.openapi.plugin.OpenApiPluginConfiguration;
 import io.javalin.openapi.plugin.swagger.SwaggerPlugin;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.database.DatabaseInterface;
@@ -91,8 +98,37 @@ public class TrailServer {
 					post("addRequest", setup::addRequest);
 				});
 				get("health", healthMonitor::check);
+				get("/", this::getVersion);
+				get("time", this::getTime);
 			});
 		});
+	}
+	@OpenApi(
+			summary = "Get server time, useful for determining ping and synchronising clocks",
+			operationId = "time",
+			path = "/time",
+			methods = HttpMethod.GET,
+			tags = {"SYSTEM"},
+			responses = {
+					@OpenApiResponse(status = "200", content = {@OpenApiContent(mimeType = "text/plain", example = "1739379173617")})
+			}
+	)
+	private void getTime(@NotNull Context context) {
+		context.status(HttpStatus.OK).result(System.currentTimeMillis() + "");
+	}
+
+	@OpenApi(
+			summary = "Get server version",
+			operationId = "ver",
+			path = "/",
+			methods = HttpMethod.GET,
+			tags = {"SYSTEM"},
+			responses = {
+					@OpenApiResponse(status = "200", content = {@OpenApiContent(mimeType = "text/plain", example = "vDEVELOPMENT")})
+			}
+	)
+	private void getVersion(@NotNull Context context) {
+		context.status(HttpStatus.OK).result(TrailServer.class.getPackage().getImplementationVersion() == null? "vDEVELOPMENT":TrailServer.class.getPackage().getImplementationVersion());
 	}
 
 	public static void main(String[] args) {
@@ -116,9 +152,6 @@ public class TrailServer {
 
 	private static void setupOpenApi(OpenApiPluginConfiguration pluginConfig) {
 		pluginConfig.withDefinitionConfiguration((version, definition) -> definition.withInfo(info -> info.setTitle("Trailserver Backend API Specification"))
-				.withServer(server -> server.description("Backend server for TrailCompass")
-						.url("{url}")
-						.variable("url", "URL of the server", "http://localhost:8080/"))
 				.withSecurity(security -> security.withBearerAuth("JWT")));
 	}
 

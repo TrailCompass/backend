@@ -78,6 +78,7 @@ public class LoginSystem {
 		try {
 			JSONObject body = new JSONObject(ctx.body());
 
+			log.info("{}, {}",body.getString("username"), body.getString("passwordhash"));
 			UserMeta user = server.db.getUserMeta(body.getString("username"), body.getString("passwordhash"));
 
 			if (user == null) {
@@ -176,23 +177,27 @@ public class LoginSystem {
 	}
 
 	public void checkTokenValidity(Context h) {
-		if ((h.method() == HandlerType.POST) && !(h.path().startsWith("/uac/login") || h.path().equals("/uac/verifyLogin"))) {
-			try {
-				String header = h.header(Header.AUTHORIZATION);
-				if (header == null) {
-					throw new MissingClaimException(h.ip());
-				}
+		if (h.path().startsWith("/uac/login")) return;
+		else if (h.path().equals("/uac/verifyLogin")) return;
+		else if (h.path().equals("/")) return;
+		else if (h.method().equals(HandlerType.GET)) return;
 
-				DecodedJWT verify = verifier.verify(header.substring(7));
 
-				log.info(verify.getClaim("validuntil").asLong() + " x " + System.currentTimeMillis());
-				if (verify.getClaim("validuntil").asLong() < System.currentTimeMillis()) {
-					h.status(HttpStatus.IM_A_TEAPOT).result("expired");
-				}
-			} catch (JSONException | AlgorithmMismatchException | SignatureVerificationException |
-					 TokenExpiredException | MissingClaimException | IncorrectClaimException e) {
-				h.status(HttpStatus.UNAUTHORIZED).result("Neplatný token!");
+		try {
+			String header = h.header(Header.AUTHORIZATION);
+			if (header == null) {
+				throw new MissingClaimException(h.ip());
 			}
+
+			DecodedJWT verify = verifier.verify(header.substring(7));
+
+			log.info(verify.getClaim("validuntil").asLong() + " x " + System.currentTimeMillis());
+			if (verify.getClaim("validuntil").asLong() < System.currentTimeMillis()) {
+				h.status(HttpStatus.IM_A_TEAPOT).result("expired");
+			}
+		} catch (JSONException | AlgorithmMismatchException | SignatureVerificationException |
+				 TokenExpiredException | MissingClaimException | IncorrectClaimException e) {
+			h.status(HttpStatus.UNAUTHORIZED).result("Neplatný token!");
 		}
 	}
 
