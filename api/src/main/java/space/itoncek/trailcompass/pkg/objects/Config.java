@@ -1,4 +1,4 @@
-package space.itoncek.trailcompass.objects;
+package space.itoncek.trailcompass.pkg.objects;
 
 import com.geodesk.feature.FeatureLibrary;
 import org.slf4j.Logger;

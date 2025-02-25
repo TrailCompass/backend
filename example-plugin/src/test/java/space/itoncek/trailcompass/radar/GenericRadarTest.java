@@ -5,9 +5,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import space.itoncek.trailcompass.Request;
-import space.itoncek.trailcompass.objects.Location;
-import space.itoncek.trailcompass.objects.LocationSupplier;
+import space.itoncek.trailcompass.pkg.Request;
+import space.itoncek.trailcompass.pkg.objects.Location;
+import space.itoncek.trailcompass.pkg.objects.LocationSupplier;
 
 import java.util.Optional;
 

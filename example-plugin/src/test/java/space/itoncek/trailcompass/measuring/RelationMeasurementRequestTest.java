@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static space.itoncek.trailcompass.measuring.RelationMeasurementRequest.*;
-import space.itoncek.trailcompass.objects.Location;
-import space.itoncek.trailcompass.objects.LocationSupplier;
+import space.itoncek.trailcompass.pkg.objects.Location;
+import space.itoncek.trailcompass.pkg.objects.LocationSupplier;
 
 import java.io.File;
 import java.util.HashMap;

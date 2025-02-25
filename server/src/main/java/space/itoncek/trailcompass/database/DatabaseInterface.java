@@ -1,9 +1,10 @@
 package space.itoncek.trailcompass.database;
 
 import org.jetbrains.annotations.Nullable;
-import space.itoncek.trailcompass.objects.Card;
-import space.itoncek.trailcompass.objects.UserMeta;
-import space.itoncek.trailcompass.objects.User;
+import space.itoncek.trailcompass.messages.Message;
+import space.itoncek.trailcompass.messages.MessageContent;
+import space.itoncek.trailcompass.pkg.objects.UserMeta;
+import space.itoncek.trailcompass.pkg.objects.User;
 
 import java.io.Closeable;
 import java.sql.SQLException;
@@ -60,14 +61,9 @@ public interface DatabaseInterface extends Closeable {
 	 */
 	boolean needsDefaultUser();
 
-	boolean addCurse(String title, String description, String casting_cost, int amount_in_deck);
-	boolean addPowerup(String name, String icon, int amount_in_deck);
-	boolean addTimeBonus(String title, int bonus_time, int amount_in_deck);
-
-	boolean addRequest(int requestClass, String title, String description, String svg_icon);
-	boolean addRequestClass(String title, int draw_cards, int pick_card);
-
-	@Nullable List<Card> listCards();
-
 	boolean isHealthy() throws SQLException;
+
+	boolean createMessage(int senderId, int receiverId, MessageContent content) throws SQLException;
+
+	List<Message> getMessages(int receiverId) throws SQLException;
 }

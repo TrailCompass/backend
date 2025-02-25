@@ -1,4 +1,4 @@
-package space.itoncek.trailcompass.objects;
+package space.itoncek.trailcompass.pkg.objects;
 
 import java.util.concurrent.Callable;
 

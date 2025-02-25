@@ -16,10 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.database.DatabaseInterface;
 import space.itoncek.trailcompass.database.MariaDatabaseImpl;
-import space.itoncek.trailcompass.modules.HealthMonitorModule;
-import space.itoncek.trailcompass.modules.LocationModule;
-import space.itoncek.trailcompass.modules.LoginSystem;
-import space.itoncek.trailcompass.modules.SetupModule;
+import space.itoncek.trailcompass.modules.*;
 import space.itoncek.trailcompass.packages.PackageLoader;
 import static space.itoncek.trailcompass.utils.Randoms.generateRandomString;
 import space.itoncek.trailcompass.utils.TextGraphics;
@@ -32,8 +29,9 @@ public class TrailServer {
 	private static final Logger log = LoggerFactory.getLogger(TrailServer.class);
 	public final boolean dev = System.getenv("DEV") != null && Boolean.parseBoolean(System.getenv("DEV"));
 	public final LoginSystem login;
-	public final SetupModule setup;
 	public final DatabaseInterface db;
+	public final MessageQueueModule mq;
+	public final MapServer mapserver;
 	public final PackageLoader packageLoader;
 	public final LocationModule lm;
 	private final int PORT = System.getenv("PORT") == null ? 8080 : Integer.parseInt(System.getenv("PORT"));
@@ -55,8 +53,9 @@ public class TrailServer {
 			throw new RuntimeException();
 		}
 
-		setup = new SetupModule(this);
 		lm = new LocationModule(this);
+		mq = new MessageQueueModule(this);
+		mapserver = new MapServer(this);
 
 		//send to bottom!
 		packageLoader = new PackageLoader(this);
@@ -71,7 +70,7 @@ public class TrailServer {
 		healthMonitor = new HealthMonitorModule(this);
 
 		app = Javalin.create(cfg -> {
-			cfg.http.gzipOnlyCompression(9);
+			cfg.http.disableCompression();
 			cfg.http.prefer405over404 = true;
 			cfg.router.ignoreTrailingSlashes = true;
 			cfg.router.treatMultipleSlashesAsSingleSlash = true;
@@ -88,14 +87,13 @@ public class TrailServer {
 					post("register", login::register);
 					get("verifyLogin", login::verifyLogin);
 				});
-				path("setup", () -> {
-					post("addCurse", setup::addCurse);
-					post("addPowerup", setup::addPowerup);
-					post("addTimeBonus", setup::addTimeBonus);
-					get("listCards", setup::listCards);
-
-					post("addRequestCategory", setup::addRequestCategory);
-					post("addRequest", setup::addRequest);
+				path("queue", ()-> {
+					post("addMessage", mq::addMessage);
+					get("getMyMessages", mq::getMessages);
+				});
+				path("mapserver", ()-> {
+					get("getServerMapHash", mapserver::getServerMapHash);
+					get("getServerMap", mapserver::getServerMap);
 				});
 				get("health", healthMonitor::check);
 				get("/", this::getVersion);

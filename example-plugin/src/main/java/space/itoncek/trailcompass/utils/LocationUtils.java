@@ -1,6 +1,6 @@
 package space.itoncek.trailcompass.utils;
 
-import space.itoncek.trailcompass.objects.Location;
+import space.itoncek.trailcompass.pkg.objects.Location;
 
 public class LocationUtils {
 	public static double calculateDistance(Location l1, Location l2) {

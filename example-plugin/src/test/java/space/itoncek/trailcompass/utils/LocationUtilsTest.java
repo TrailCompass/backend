@@ -2,7 +2,7 @@ package space.itoncek.trailcompass.utils;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
-import space.itoncek.trailcompass.objects.Location;
+import space.itoncek.trailcompass.pkg.objects.Location;
 
 import java.util.HashMap;
 import java.util.Map;

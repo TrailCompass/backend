@@ -1,4 +1,4 @@
-package space.itoncek.trailcompass;
+package space.itoncek.trailcompass.pkg;
 
 import java.util.List;
 

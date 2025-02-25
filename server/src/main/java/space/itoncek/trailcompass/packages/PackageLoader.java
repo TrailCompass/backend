@@ -2,10 +2,10 @@ package space.itoncek.trailcompass.packages;
 
 import com.geodesk.feature.FeatureLibrary;
 import org.slf4j.LoggerFactory;
-import space.itoncek.trailcompass.Card;
-import space.itoncek.trailcompass.Package;
+import space.itoncek.trailcompass.pkg.Card;
+import space.itoncek.trailcompass.pkg.Package;
 import space.itoncek.trailcompass.TrailServer;
-import space.itoncek.trailcompass.objects.Config;
+import space.itoncek.trailcompass.pkg.objects.Config;
 
 import java.io.File;
 import java.net.URL;

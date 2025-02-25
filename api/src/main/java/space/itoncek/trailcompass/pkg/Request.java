@@ -1,6 +1,6 @@
-package space.itoncek.trailcompass;
+package space.itoncek.trailcompass.pkg;
 
-import space.itoncek.trailcompass.objects.Type;
+import space.itoncek.trailcompass.pkg.objects.Type;
 
 import java.util.Optional;
 

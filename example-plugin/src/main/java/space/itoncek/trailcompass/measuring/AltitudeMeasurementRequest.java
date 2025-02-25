@@ -1,9 +1,9 @@
 package space.itoncek.trailcompass.measuring;
 
 import org.slf4j.Logger;
-import space.itoncek.trailcompass.Request;
-import space.itoncek.trailcompass.objects.LocationSupplier;
-import space.itoncek.trailcompass.objects.Type;
+import space.itoncek.trailcompass.pkg.Request;
+import space.itoncek.trailcompass.pkg.objects.LocationSupplier;
+import space.itoncek.trailcompass.pkg.objects.Type;
 
 import java.util.Optional;
 

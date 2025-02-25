@@ -1,8 +1,8 @@
 package space.itoncek.trailcompass.modules;
 
 import space.itoncek.trailcompass.TrailServer;
-import space.itoncek.trailcompass.objects.Location;
-import space.itoncek.trailcompass.objects.LocationSupplier;
+import space.itoncek.trailcompass.pkg.objects.Location;
+import space.itoncek.trailcompass.pkg.objects.LocationSupplier;
 
 public class LocationModule {
 	private final TrailServer server;

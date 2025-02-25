@@ -1,9 +1,11 @@
 package space.itoncek.trailcompass.database;
 
-import org.jetbrains.annotations.Nullable;
+import org.mariadb.jdbc.export.Prepare;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import space.itoncek.trailcompass.objects.*;
+import space.itoncek.trailcompass.messages.Message;
+import space.itoncek.trailcompass.messages.MessageContent;
+import space.itoncek.trailcompass.pkg.objects.*;
 
 import java.io.IOException;
 import java.sql.*;
@@ -25,7 +27,7 @@ public class MariaDatabaseImpl implements DatabaseInterface {
 					CREATE TABLE IF NOT EXISTS `users` (
 						`user_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 						`user_nickname` VARCHAR(100) NOT NULL COLLATE 'utf8mb4_general_ci',
-						`user_passwordhash` CHAR(64) NOT NULL COLLATE 'utf8mb4_general_ci',
+						`user_passwordhash` CHAR(128) NOT NULL COLLATE 'utf8mb4_general_ci',
 						`user_isadmin` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0',
 						`user_ishider` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0',
 						PRIMARY KEY (`user_id`) USING BTREE,
@@ -35,55 +37,24 @@ public class MariaDatabaseImpl implements DatabaseInterface {
 					ENGINE=InnoDB
 					;
 					""");
+
 			stmt.executeUpdate("""
-					CREATE TABLE IF NOT EXISTS `request_classes` (
-						`class_id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-						`class_name` VARCHAR(256) NOT NULL DEFAULT '' COLLATE 'utf8mb4_general_ci',
-						`class_draw_cards` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0',
-						`class_pick_card` TINYINT(3) UNSIGNED NOT NULL DEFAULT '0',
-						PRIMARY KEY (`class_id`) USING BTREE,
-						UNIQUE INDEX `class_name` (`class_name`) USING BTREE
+					CREATE TABLE IF NOT EXISTS `messages` (
+						`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+						`sender` INT(10) UNSIGNED NOT NULL DEFAULT '0',
+						`receiver` INT(10) UNSIGNED NOT NULL DEFAULT '0',
+						`content` MEDIUMTEXT NOT NULL COLLATE 'utf8mb4_general_ci',
+						`read` TINYINT(3) UNSIGNED NOT NULL,
+						PRIMARY KEY (`id`) USING BTREE,
+						INDEX `FK__users` (`sender`) USING BTREE,
+						INDEX `FK__users_2` (`receiver`) USING BTREE,
+						CONSTRAINT `FK__users` FOREIGN KEY (`sender`) REFERENCES `users` (`user_id`) ON UPDATE NO ACTION ON DELETE NO ACTION,
+						CONSTRAINT `FK__users_2` FOREIGN KEY (`receiver`) REFERENCES `users` (`user_id`) ON UPDATE NO ACTION ON DELETE NO ACTION
 					)
 					COLLATE='utf8mb4_general_ci'
 					ENGINE=InnoDB
-					;
-					""");
+					;""");
 
-			stmt.executeUpdate("""
-					CREATE TABLE IF NOT EXISTS `request_types` (
-						`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-						`request_class_id` INT(10) UNSIGNED NOT NULL,
-						`name` VARCHAR(256) NOT NULL DEFAULT '' COLLATE 'utf8mb4_general_ci',
-						`description` TEXT NOT NULL DEFAULT '' COLLATE 'utf8mb4_general_ci',
-						`svg_icon_url` VARCHAR(4096) NOT NULL DEFAULT '' COLLATE 'utf8mb4_general_ci',
-						PRIMARY KEY (`id`) USING BTREE,
-						UNIQUE INDEX `name` (`name`) USING BTREE,
-						UNIQUE INDEX `description` (`description`) USING HASH,
-						INDEX `class_id` (`request_class_id`) USING BTREE,
-						CONSTRAINT `class_id` FOREIGN KEY (`request_class_id`) REFERENCES `request_classes` (`class_id`) ON UPDATE CASCADE ON DELETE RESTRICT
-					)
-					COLLATE='utf8mb4_general_ci'
-					ENGINE=InnoDB
-					;
-					""");
-
-			stmt.executeUpdate("""
-					CREATE TABLE IF NOT EXISTS `card_definitions` (
-						`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-						`type` VARCHAR(50) NOT NULL DEFAULT '' COLLATE 'utf8mb4_uca1400_ai_ci',
-						`name` VARCHAR(256) NOT NULL COLLATE 'utf8mb4_uca1400_ai_ci',
-						`amount_in_deck` INT(11) NOT NULL DEFAULT '1',
-						`description` TEXT NULL DEFAULT NULL COMMENT 'mainly for curses and requests' COLLATE 'utf8mb4_uca1400_ai_ci',
-						`casting_cost` TEXT NULL DEFAULT NULL COMMENT 'for curses' COLLATE 'utf8mb4_uca1400_ai_ci',
-						`bonus_time` INT(11) NULL DEFAULT NULL COMMENT 'for time bonuses only',
-						`icon` TEXT NULL DEFAULT NULL COMMENT 'for powerups and time bonuses' COLLATE 'utf8mb4_uca1400_ai_ci',
-						PRIMARY KEY (`id`) USING BTREE,
-						UNIQUE INDEX `type_name` (`type`, `name`) USING BTREE
-					)
-					COLLATE='utf8mb4_uca1400_ai_ci'
-					ENGINE=InnoDB
-					;
-					""");
 		} catch (SQLException e) {
 			log.error("Unable to migrate!", e);
 		}
@@ -152,107 +123,32 @@ public class MariaDatabaseImpl implements DatabaseInterface {
 	}
 
 	@Override
-	public boolean addCurse(String title, String description, String casting_cost, int amount_in_deck) {
-		try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO card_definitions (type,name,description,casting_cost,amount_in_deck) VALUES (?,?,?,?,?);")) {
-			stmt.setString(1, CardType.CURSE.name());
-			stmt.setString(2, title);
-			stmt.setString(3, description);
-			stmt.setString(4, casting_cost);
-			stmt.setInt(5, amount_in_deck);
-			return stmt.executeUpdate() > 0;
-		} catch (SQLException e) {
-			log.error("Unable to save a card!", e);
-			return false;
-		}
-	}
-
-	@Override
-	public boolean addRequest(int requestClass, String title, String description, String svg_icon) {
-		try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO request_types (request_class_id,name,description,svg_icon_url) VALUES (?,?,?,?);")) {
-			stmt.setInt(1, requestClass);
-			stmt.setString(2, title);
-			stmt.setString(3, description);
-			stmt.setString(4, svg_icon);
-			return stmt.executeUpdate() > 0;
-		} catch (SQLException e) {
-			log.error("Unable to save a request!", e);
-			return false;
-		}
-	}
-
-	@Override
-	public boolean addRequestClass(String title, int draw_cards, int pick_card) {
-		try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO request_classes (class_name,class_draw_cards,class_pick_card) VALUES (?,?,?);")) {
-			stmt.setString(1, title);
-			stmt.setInt(2, draw_cards);
-			stmt.setInt(3, pick_card);
-			return stmt.executeUpdate() > 0;
-		} catch (SQLException e) {
-			log.error("Unable to save a request class!", e);
-			return false;
-		}
-	}
-
-	@Override
-	public boolean addPowerup(String title, String icon, int amount_in_deck) {
-		try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO card_definitions (type,name,icon,amount_in_deck) VALUES (?,?,?,?);")) {
-			stmt.setString(1, CardType.CURSE.name());
-			stmt.setString(2, title);
-			stmt.setString(3, icon);
-			stmt.setInt(4, amount_in_deck);
-			return stmt.executeUpdate() > 0;
-		} catch (SQLException e) {
-			log.error("Unable to save a card!", e);
-			return false;
-		}
-	}
-
-	@Override
-	public boolean addTimeBonus(String title, int bonus_time, int amount_in_deck) {
-		try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO card_definitions (type,name,bonus_time,amount_in_deck) VALUES (?,?,?,?)")) {
-			stmt.setString(1, CardType.CURSE.name());
-			stmt.setString(2,title);
-			stmt.setInt(3, bonus_time);
-			stmt.setInt(4, amount_in_deck);
-			return stmt.executeUpdate() > 0;
-		} catch (SQLException e) {
-			log.error("Unable to save a card!", e);
-			return false;
-		}
-	}
-
-	@Override
-	public @Nullable List<Card> listCards() {
-		try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM card_definitions;");
-			 ResultSet rs = stmt.executeQuery()) {
-			ArrayList<Card> cards = new ArrayList<>();
-
-			while (rs.next()) {
-				Card card = switch (CardType.valueOf(rs.getString("type"))) {
-					case CURSE ->
-							new Curse(rs.getInt("id"), rs.getString("name"), rs.getString("description"), rs.getString("casting_cost"), rs.getInt("amount_in_deck"));
-					case POWERUP ->
-							new Powerup(rs.getInt("id"), rs.getString("name"), rs.getString("icon"), rs.getInt("amount_in_deck"));
-					case TIME_BONUS ->
-							new TimeBonus(rs.getInt("id"), rs.getString("name"), rs.getInt("bonus_time"), rs.getInt("amount_in_deck"));
-					//required for null detection, we don't want any nulls here ;)
-					//noinspection UnnecessaryDefault
-					default -> null;
-				};
-				if (card != null) {
-					cards.add(card);
-				}
-			}
-			return cards;
-		} catch (SQLException e) {
-			log.error("Unable to save a curse!", e);
-			return null;
-		}
-	}
-
-	@Override
 	public boolean isHealthy() throws SQLException {
 		return conn.isValid(2);
+	}
+
+	@Override
+	public boolean createMessage(int senderId, int receiverId, MessageContent content) throws SQLException {
+		try(PreparedStatement stmt = conn.prepareStatement("INSERT INTO messages(sender, receiver, content,`read`) VALUES (%d,%d, %s,0);")) {
+			stmt.setInt(1,senderId);
+			stmt.setInt(2,receiverId);
+			stmt.setString(3,content.serialize());
+			return stmt.executeUpdate()>0;
+		}
+	}
+
+	@Override
+	public List<Message> getMessages(int receiverId) throws SQLException {
+		List<Message> msgs = new ArrayList<>();
+		try	(PreparedStatement stmt = conn.prepareStatement("SELECT * FROM messages WHERE receiver = ?;")) {
+			stmt.setInt(1,receiverId);
+			ResultSet rs = stmt.executeQuery();
+			while (rs.next()) {
+				Message msg = new Message(rs.getInt("id"), rs.getInt("sender"), MessageContent.decode(rs.getString("content")),rs.getBoolean("read"));
+				msgs.add(msg);
+			}
+		}
+		return msgs;
 	}
 
 	@Override

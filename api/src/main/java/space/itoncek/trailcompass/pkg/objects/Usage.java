@@ -1,4 +1,4 @@
-package space.itoncek.trailcompass.objects;
+package space.itoncek.trailcompass.pkg.objects;
 
 /**
  * Represents the condition of a card, if it can be cast right now.

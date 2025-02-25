@@ -6,10 +6,10 @@ import com.geodesk.geom.Mercator;
 import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Point;
 import org.slf4j.Logger;
-import space.itoncek.trailcompass.Request;
-import space.itoncek.trailcompass.objects.Location;
-import space.itoncek.trailcompass.objects.LocationSupplier;
-import space.itoncek.trailcompass.objects.Type;
+import space.itoncek.trailcompass.pkg.Request;
+import space.itoncek.trailcompass.pkg.objects.Location;
+import space.itoncek.trailcompass.pkg.objects.LocationSupplier;
+import space.itoncek.trailcompass.pkg.objects.Type;
 import space.itoncek.trailcompass.utils.LocationUtils;
 
 import java.util.ArrayList;

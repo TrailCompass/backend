@@ -1,6 +1,6 @@
-package space.itoncek.trailcompass;
+package space.itoncek.trailcompass.pkg;
 
-import space.itoncek.trailcompass.objects.Usage;
+import space.itoncek.trailcompass.pkg.objects.Usage;
 
 /**
  * Represents a card, that can be played during a game.

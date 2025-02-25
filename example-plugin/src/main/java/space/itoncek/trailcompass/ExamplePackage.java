@@ -1,16 +1,16 @@
 package space.itoncek.trailcompass;
 
 import com.geodesk.feature.FeatureLibrary;
-import org.slf4j.Logger;
 import space.itoncek.trailcompass.measuring.MeasuringCategory;
-import space.itoncek.trailcompass.objects.Config;
-import space.itoncek.trailcompass.objects.LocationSupplier;
+import space.itoncek.trailcompass.pkg.Card;
+import space.itoncek.trailcompass.pkg.Package;
+import space.itoncek.trailcompass.pkg.RequestCategory;
+import space.itoncek.trailcompass.pkg.objects.Config;
 import space.itoncek.trailcompass.radar.RadarCategory;
 
-import java.io.File;
 import java.util.List;
 
-public class ExamplePackage implements Package{
+public class ExamplePackage implements Package {
 	private Config c;
 	private FeatureLibrary flib;
 

@@ -1,6 +1,7 @@
 package space.itoncek.trailcompass;
 
-import space.itoncek.trailcompass.objects.Usage;
+import space.itoncek.trailcompass.pkg.Card;
+import space.itoncek.trailcompass.pkg.objects.Usage;
 
 public class ExampleCard implements Card {
 	@Override

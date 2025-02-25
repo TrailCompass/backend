@@ -28,17 +28,17 @@ public class HealthMonitorModule {
 			db = false;
 		}
 
-		sb.append("DB: ").append(db?"✅":"❌").append("\n");
+		sb.append("DB: ").append(db?"Online":"Offline").append("\n");
 
 		boolean login = server.login.isHealthy();
-		sb.append("Login: ").append(login?"✅":"❌").append("\n");
+		sb.append("Login: ").append(login?"Online":"Offline").append("\n");
 
-		boolean setup = server.setup.isHealthy();
-		sb.append("Setup: ").append(setup?"✅":"❌").append("\n");
+		boolean mapserver = server.mapserver.isHealthy();
+		sb.append("Login: ").append(mapserver?"Online":"Offline").append("\n");
 
 		boolean packages = server.packageLoader.isHealthy();
-		sb.append("Setup: ").append(packages?"✅":"❌").append("\n");
+		sb.append("PackageLoader: ").append(packages?"Online":"Offline").append("\n");
 
-		ctx.status(HttpStatus.OK).result(sb.toString());
+		ctx.status((login||mapserver||packages)?HttpStatus.OK:HttpStatus.INTERNAL_SERVER_ERROR).result(sb.toString());
 	}
 }

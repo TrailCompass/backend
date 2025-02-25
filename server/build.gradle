@@ -22,6 +22,7 @@ dependencies {
     implementation 'org.mariadb.jdbc:mariadb-java-client:3.5.1'
     implementation("com.github.kmehrunes:javalin-jwt:0.7.0")
     implementation("org.apache.commons:commons-lang3:3.14.0")
+    implementation 'commons-codec:commons-codec:1.16.0'
     implementation("commons-io:commons-io:2.15.1")
     implementation('com.geodesk:geodesk:0.2.1')
     implementation 'io.javalin.community.openapi:javalin-openapi-plugin:' + javalinVersion

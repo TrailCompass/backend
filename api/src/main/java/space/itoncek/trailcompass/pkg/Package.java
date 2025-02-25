@@ -1,8 +1,6 @@
-package space.itoncek.trailcompass;
+package space.itoncek.trailcompass.pkg;
 
-import org.slf4j.Logger;
-import space.itoncek.trailcompass.objects.Config;
-import space.itoncek.trailcompass.objects.LocationSupplier;
+import space.itoncek.trailcompass.pkg.objects.Config;
 
 import java.util.List;
 
