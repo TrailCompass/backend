@@ -39,4 +39,17 @@ public class TextGraphics {
 		\t
 		\t""".formatted(TextGraphics.class.getPackage().getImplementationVersion() == null? "vDEVELOPMENT":TextGraphics.class.getPackage().getImplementationVersion());
 	}
+
+	public static String generateDevWarningBox() {
+		return """
+			
+			╔════════════════════════════════════════════════════════════════╗
+			║ This server is running in DEVELOPMENT mode! This can cause     ║
+			║ unexpected behaviour, exposes information about this instance  ║
+			║ that shouldn't be public and is generally a bad practice, if   ║
+			║ you do not know what you are doing! If you want to run in      ║
+			║ production mode, just remove "dev=true" from the startup args. ║
+			╚════════════════════════════════════════════════════════════════╝
+			""";
+	}
 }

@@ -1,11 +1,11 @@
 package space.itoncek.trailcompass.database;
 
-import org.mariadb.jdbc.export.Prepare;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.messages.Message;
 import space.itoncek.trailcompass.messages.MessageContent;
-import space.itoncek.trailcompass.pkg.objects.*;
+import space.itoncek.trailcompass.pkg.objects.User;
+import space.itoncek.trailcompass.pkg.objects.UserMeta;
 
 import java.io.IOException;
 import java.sql.*;
@@ -22,6 +22,7 @@ public class MariaDatabaseImpl implements DatabaseInterface {
 
 	@Override
 	public void migrate() {
+		log.info("This database is stored in MySQL!");
 		try (Statement stmt = conn.createStatement()) {
 			stmt.executeUpdate("""
 					CREATE TABLE IF NOT EXISTS `users` (
@@ -44,7 +45,7 @@ public class MariaDatabaseImpl implements DatabaseInterface {
 						`sender` INT(10) UNSIGNED NOT NULL DEFAULT '0',
 						`receiver` INT(10) UNSIGNED NOT NULL DEFAULT '0',
 						`content` MEDIUMTEXT NOT NULL COLLATE 'utf8mb4_general_ci',
-						`read` TINYINT(3) UNSIGNED NOT NULL,
+						`read` TINYINT(1) UNSIGNED NOT NULL,
 						PRIMARY KEY (`id`) USING BTREE,
 						INDEX `FK__users` (`sender`) USING BTREE,
 						INDEX `FK__users_2` (`receiver`) USING BTREE,

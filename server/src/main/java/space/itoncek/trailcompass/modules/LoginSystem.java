@@ -6,6 +6,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.*;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import io.javalin.http.ContentType;
 import io.javalin.http.Context;
 import io.javalin.http.HandlerType;
 import io.javalin.http.Header;
@@ -78,7 +79,6 @@ public class LoginSystem {
 		try {
 			JSONObject body = new JSONObject(ctx.body());
 
-			log.info("{}, {}",body.getString("username"), body.getString("passwordhash"));
 			UserMeta user = server.db.getUserMeta(body.getString("username"), body.getString("passwordhash"));
 
 			if (user == null) {
@@ -157,6 +157,24 @@ public class LoginSystem {
 		}
 	}
 
+	public void amIAdmin(Context ctx) {
+		if (ctx.status() == HttpStatus.UNAUTHORIZED || ctx.status() == HttpStatus.IM_A_TEAPOT) return;
+
+		User user = getUser(ctx);
+		if (user != null) {
+			ctx.status(200).contentType(ContentType.TEXT_PLAIN).result("%b".formatted(user.admin()));
+		} else ctx.status(HttpStatus.UNAUTHORIZED).contentType(ContentType.TEXT_PLAIN).result("Unable to find that user!");
+	}
+
+	public void myName(Context ctx) {
+		if (ctx.status() == HttpStatus.UNAUTHORIZED || ctx.status() == HttpStatus.IM_A_TEAPOT) return;
+
+		User user = getUser(ctx);
+		if (user != null) {
+			ctx.status(200).contentType(ContentType.TEXT_PLAIN).result(user.name());
+		} else ctx.status(HttpStatus.UNAUTHORIZED).contentType(ContentType.TEXT_PLAIN).result("Unable to find that user!");
+	}
+
 	public void verifyLogin(Context ctx) {
 		if (ctx.status() == HttpStatus.UNAUTHORIZED || ctx.status() == HttpStatus.IM_A_TEAPOT) return;
 		try {
@@ -181,8 +199,6 @@ public class LoginSystem {
 		else if (h.path().equals("/uac/verifyLogin")) return;
 		else if (h.path().equals("/")) return;
 		else if (h.method().equals(HandlerType.GET) && server.dev) return;
-
-
 		try {
 			String header = h.header(Header.AUTHORIZATION);
 			if (header == null) {

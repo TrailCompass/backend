@@ -25,7 +25,6 @@ public class HealthMonitorModule {
 			db = server.db.isHealthy();
 		} catch (SQLException e) {
 			log.error("Database is not healthy!");
-			db = false;
 		}
 
 		sb.append("DB: ").append(db?"Online":"Offline").append("\n");

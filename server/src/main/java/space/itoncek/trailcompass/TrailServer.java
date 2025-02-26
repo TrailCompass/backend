@@ -11,14 +11,17 @@ import io.javalin.openapi.OpenApiResponse;
 import io.javalin.openapi.plugin.OpenApiPlugin;
 import io.javalin.openapi.plugin.OpenApiPluginConfiguration;
 import io.javalin.openapi.plugin.swagger.SwaggerPlugin;
+import static org.apache.commons.codec.digest.DigestUtils.sha512Hex;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.database.DatabaseInterface;
 import space.itoncek.trailcompass.database.MariaDatabaseImpl;
+import space.itoncek.trailcompass.database.StorageDatabaseImpl;
 import space.itoncek.trailcompass.modules.*;
 import space.itoncek.trailcompass.packages.PackageLoader;
 import static space.itoncek.trailcompass.utils.Randoms.generateRandomString;
+import static space.itoncek.trailcompass.utils.Randoms.pickRandomStrings;
 import space.itoncek.trailcompass.utils.TextGraphics;
 
 import java.io.File;
@@ -27,7 +30,7 @@ import java.sql.SQLException;
 
 public class TrailServer {
 	private static final Logger log = LoggerFactory.getLogger(TrailServer.class);
-	public final boolean dev = System.getenv("DEV") != null && Boolean.parseBoolean(System.getenv("DEV"));
+	public final boolean dev = System.getenv("dev") != null && Boolean.parseBoolean(System.getenv("dev"));
 	public final LoginSystem login;
 	public final DatabaseInterface db;
 	public final MessageQueueModule mq;
@@ -40,7 +43,8 @@ public class TrailServer {
 
 	public TrailServer() {
 		try {
-			db = new MariaDatabaseImpl("jdbc:mariadb://%s/%s".formatted(System.getenv("MARIA"), System.getenv("MARIA_DB")), System.getenv("MARIA_USER"), System.getenv("MARIA_PASSWORD"));
+			if(dev) db = new StorageDatabaseImpl(new File("./data/db.db"));
+			else db = new MariaDatabaseImpl("jdbc:mariadb://%s/%s".formatted(System.getenv("MARIA"), System.getenv("MARIA_DB")), System.getenv("MARIA_USER"), System.getenv("MARIA_PASSWORD"));
 		} catch (SQLException e) {
 			log.error("Unable to init database manager", e);
 			throw new RuntimeException();
@@ -86,6 +90,8 @@ public class TrailServer {
 					post("login", login::login);
 					post("register", login::register);
 					get("verifyLogin", login::verifyLogin);
+					get("amIAdmin",login::amIAdmin);
+					get("myName",login::myName);
 				});
 				path("queue", ()-> {
 					post("addMessage", mq::addMessage);
@@ -156,12 +162,13 @@ public class TrailServer {
 	private void start() throws SQLException {
 		app.start(PORT);
 		packageLoader.loadPlugins();
-		log.info(TextGraphics.generateIntroMural());
 		db.migrate();
+		if (dev) log.warn(TextGraphics.generateDevWarningBox());
+		log.info(TextGraphics.generateIntroMural());
 		if (db.needsDefaultUser()) {
-			String user = generateRandomString(10, true, false);
+			String user = pickRandomStrings();
 			String password = generateRandomString(16, true, false);
-			if (db.createUser(user, password, true)) {
+			if (db.createUser(user, sha512Hex(password), true)) {
 				log.info("New user created successfully");
 			} else {
 				log.error("Failed to create new user!");
