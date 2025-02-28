@@ -66,4 +66,8 @@ public interface DatabaseInterface extends Closeable {
 	boolean createMessage(int senderId, int receiverId, MessageContent content) throws SQLException;
 
 	List<Message> getMessages(int receiverId) throws SQLException;
+
+    int getCurrentHiderId();
+
+	boolean setCurrentHider(int i);
 }

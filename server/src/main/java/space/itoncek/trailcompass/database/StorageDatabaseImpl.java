@@ -166,12 +166,35 @@ public class StorageDatabaseImpl implements DatabaseInterface {
 
 			return d.messages.parallelStream()
 					.filter(x->x.receiver_id == receiverId)
-					.map(x-> {
-						return new Message(x.id,x.sender_id,MessageContent.decode(x.content),x.read);
-					})
+					.map(x-> new Message(x.id,x.sender_id,MessageContent.decode(x.content),x.read))
 					.toList();
 		} catch (IOException | ClassNotFoundException e) {
 			return null;
+		}
+	}
+
+	@Override
+	public int getCurrentHiderId() {
+		try {
+			Database d = getDatabase();
+			return d.hiderId;
+		} catch (IOException | ClassNotFoundException e) {
+			log.warn("Unable to get current hider from the database",e);
+			return -1;
+        }
+    }
+
+	@Override
+	public boolean setCurrentHider(int i) {
+		try {
+			Database d = getDatabase();
+			if(d.users.stream().anyMatch(x->x.id==i)) {
+				d.hiderId = i;
+				return true;
+			} else return false;
+		} catch (IOException | ClassNotFoundException e) {
+			log.warn("Unable to get current hider from the database",e);
+			return false;
 		}
 	}
 
@@ -197,11 +220,13 @@ public class StorageDatabaseImpl implements DatabaseInterface {
 	private static class Database implements Serializable {
 		public List<Database.User> users;
 		public List<Database.Message> messages;
+		public int hiderId;
 
 		public static Database generateEmptyDatabase() {
 			Database database = new Database();
 			database.users = new ArrayList<>();
 			database.messages = new ArrayList<>();
+			database.hiderId = -1;
 			return database;
 		}
 

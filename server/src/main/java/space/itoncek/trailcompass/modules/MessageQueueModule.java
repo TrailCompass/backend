@@ -16,8 +16,8 @@ public class MessageQueueModule {
 		this.server = server;
 	}
 
-	public void addMessage(int sender_id, int receiver_id, MessageContent content) throws SQLException {
-		server.db.createMessage(sender_id,receiver_id,content);
+	public boolean addMessage(int sender_id, int receiver_id, MessageContent content) throws SQLException {
+		return server.db.createMessage(sender_id,receiver_id,content);
 	}
 	public List<Message> getMessages(int receiver_id) throws SQLException {
 		return server.db.getMessages(receiver_id);

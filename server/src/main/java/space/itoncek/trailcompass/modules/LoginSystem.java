@@ -14,6 +14,7 @@ import io.javalin.http.HttpStatus;
 import io.javalin.openapi.*;
 import javalinjwt.JWTGenerator;
 import javalinjwt.JWTProvider;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -228,5 +229,31 @@ public class LoginSystem {
 
 	public boolean isHealthy() {
 		return provider != null && verifier != null && generator != null && algorithm != null;
+	}
+
+	public void getUserMeta(@NotNull Context ctx) {
+		if (ctx.status() == HttpStatus.UNAUTHORIZED || ctx.status() == HttpStatus.IM_A_TEAPOT) return;
+
+		if(ctx.body().isEmpty()) {
+			ctx.status(HttpStatus.BAD_REQUEST).contentType(ContentType.TEXT_PLAIN).result("400 BAD REQUEST");
+			return;
+		}
+
+		JSONObject o = new JSONObject(ctx.body());
+		if(!o.has("userId")) {
+			ctx.status(HttpStatus.BAD_REQUEST).contentType(ContentType.TEXT_PLAIN).result("400 BAD REQUEST");
+			return;
+		}
+
+		int userId = o.getInt("userId");
+
+		User user = server.db.getUserByID(userId);
+
+		if(user == null) {
+			ctx.status(HttpStatus.BAD_REQUEST).contentType(ContentType.TEXT_PLAIN).result("400 BAD REQUEST");
+			return;
+		}
+
+		ctx.status(HttpStatus.OK).contentType(ContentType.APPLICATION_JSON).result(user.toJSON().toString(4));
 	}
 }

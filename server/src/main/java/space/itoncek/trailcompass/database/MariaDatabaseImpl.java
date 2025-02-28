@@ -153,6 +153,16 @@ public class MariaDatabaseImpl implements DatabaseInterface {
 	}
 
 	@Override
+	public int getCurrentHiderId() {
+		return 0;
+	}
+
+	@Override
+	public boolean setCurrentHider(int i) {
+		return false;
+	}
+
+	@Override
 	public void close() throws IOException {
 		try {
 			conn.close();
