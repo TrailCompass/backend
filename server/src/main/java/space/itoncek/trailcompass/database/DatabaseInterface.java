@@ -3,11 +3,13 @@ package space.itoncek.trailcompass.database;
 import org.jetbrains.annotations.Nullable;
 import space.itoncek.trailcompass.messages.Message;
 import space.itoncek.trailcompass.messages.MessageContent;
-import space.itoncek.trailcompass.pkg.objects.UserMeta;
-import space.itoncek.trailcompass.pkg.objects.User;
+import space.itoncek.trailcompass.objects.GameState;
+import space.itoncek.trailcompass.objects.User;
+import space.itoncek.trailcompass.objects.UserMeta;
 
 import java.io.Closeable;
 import java.sql.SQLException;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 public interface DatabaseInterface extends Closeable {
@@ -65,9 +67,13 @@ public interface DatabaseInterface extends Closeable {
 
 	boolean createMessage(int senderId, int receiverId, MessageContent content) throws SQLException;
 
-	List<Message> getMessages(int receiverId) throws SQLException;
+	@Nullable List<Message> getMessages(int receiverId) throws SQLException;
 
-    int getCurrentHiderId();
+    int getCurrentHiderId() throws SQLException;
 
-	boolean setCurrentHider(int i);
+	boolean setCurrentHider(int i) throws SQLException;
+
+	@Nullable ZonedDateTime getStartTime() throws SQLException;
+
+	@Nullable GameState getGameState() throws SQLException;
 }

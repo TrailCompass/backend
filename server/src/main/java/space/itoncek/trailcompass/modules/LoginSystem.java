@@ -21,8 +21,8 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.TrailServer;
-import space.itoncek.trailcompass.pkg.objects.UserMeta;
-import space.itoncek.trailcompass.pkg.objects.User;
+import space.itoncek.trailcompass.objects.UserMeta;
+import space.itoncek.trailcompass.objects.User;
 import static space.itoncek.trailcompass.utils.Randoms.generateRandomString;
 
 import java.sql.SQLException;
@@ -199,7 +199,8 @@ public class LoginSystem {
 		if (h.path().startsWith("/uac/login")) return;
 		else if (h.path().equals("/uac/verifyLogin")) return;
 		else if (h.path().equals("/")) return;
-		else if (h.method().equals(HandlerType.GET) && server.dev) return;
+		else if (h.method().equals(HandlerType.GET) && /*server.dev*/ true) return;
+
 		try {
 			String header = h.header(Header.AUTHORIZATION);
 			if (header == null) {

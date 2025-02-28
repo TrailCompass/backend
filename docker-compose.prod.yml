@@ -22,16 +22,19 @@ services:
   server:
     image: ghcr.io/trailcompass/backend:latest
     environment:
+      - DEV=false
       - MARIA=db:3306
       - MARIA_DB=tc_system
       - MARIA_USER=trailcompass
       - MARIA_PASSWORD=trailcompass
+      - PORT=8080
     depends_on:
       db:
         condition: service_healthy
         restart: true
     volumes:
-      - "server-plugins:/usr/app/plugins"
+      - "./packages:/usr/app/packages"
+      - "./data:/usr/app/data"
     ports:
       - "8080:8080"
     networks:
@@ -45,6 +48,5 @@ services:
 
 volumes:
   mariadb-volume:
-  server-plugins:
 networks:
   internal-network:

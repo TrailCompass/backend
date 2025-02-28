@@ -37,9 +37,9 @@ public class TrailServer {
 	public final MapServer mapserver;
 	public final PackageLoader packageLoader;
 	public final LocationModule lm;
+	public final GameManagerModule gamemanager;
 	private final int PORT = System.getenv("PORT") == null ? 8080 : Integer.parseInt(System.getenv("PORT"));
 	private final HealthMonitorModule healthMonitor;
-	private final GameManagerModule gamemanager;
 	Javalin app;
 
 	public TrailServer() {
@@ -107,8 +107,7 @@ public class TrailServer {
 				path("gamemanager", ()-> {
 					get("currentHider", gamemanager::getCurrentHider);
 					post("currentHider", gamemanager::setCurrentHider);
-					get("gameState", gamemanager::getGameState);
-					post("start", gamemanager::start);
+					get("startTime", gamemanager::getStartTime);
 				});
 				get("health", healthMonitor::check);
 				get("/", this::getVersion);

@@ -2,7 +2,6 @@ package space.itoncek.trailcompass.modules;
 
 import io.javalin.http.ContentType;
 import io.javalin.http.Context;
-import io.javalin.http.Header;
 import io.javalin.http.HttpStatus;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
@@ -12,7 +11,6 @@ import space.itoncek.trailcompass.TrailServer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.time.ZonedDateTime;
 
 public class MapServer {
@@ -42,14 +40,11 @@ public class MapServer {
 	public void getServerMap(Context ctx) {
 		if (ctx.status() == HttpStatus.UNAUTHORIZED || ctx.status() == HttpStatus.IM_A_TEAPOT) return;
 		try {
-			byte[] bytes = Files.readAllBytes(new File("./data/servermap.map").toPath());
-			ctx.status(HttpStatus.OK)
-					.header(Header.CONTENT_LENGTH,bytes.length+"")
-					.header(Header.ACCEPT_RANGES,"bytes")
-					.removeHeader(Header.CONTENT_TYPE)
-					.result(bytes);
+			ctx.status(HttpStatus.OK).result(new FileInputStream("./data/servermap.map"));
 		} catch (IOException e) {
 			log.error("Unable to read mapfile",e);
+		}finally {
+			System.gc();
 		}
 	}
 

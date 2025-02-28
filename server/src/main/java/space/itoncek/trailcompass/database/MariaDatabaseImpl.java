@@ -1,14 +1,18 @@
 package space.itoncek.trailcompass.database;
 
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.messages.Message;
 import space.itoncek.trailcompass.messages.MessageContent;
-import space.itoncek.trailcompass.pkg.objects.User;
-import space.itoncek.trailcompass.pkg.objects.UserMeta;
+import space.itoncek.trailcompass.objects.GameState;
+import space.itoncek.trailcompass.objects.User;
+import space.itoncek.trailcompass.objects.UserMeta;
 
 import java.io.IOException;
 import java.sql.*;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,8 +60,34 @@ public class MariaDatabaseImpl implements DatabaseInterface {
 					ENGINE=InnoDB
 					;""");
 
+			stmt.executeUpdate("""
+					CREATE TABLE IF NOT EXISTS `gamestate` (
+						`key` VARCHAR(512) NOT NULL DEFAULT '0' COLLATE 'utf8mb4_general_ci',
+						`value` MEDIUMTEXT NOT NULL COLLATE 'utf8mb4_general_ci',
+						PRIMARY KEY (`key`) USING BTREE
+					)
+					COLLATE='utf8mb4_general_ci' ENGINE=InnoDB;""");
+
+			if (!gamestateContainsKey(stmt,"game-start")) {
+				stmt.executeUpdate("INSERT INTO gamestate VALUES ('game-start','1970-01-01T00:00:00Z[UTC]')");
+			}
+
+			if (!gamestateContainsKey(stmt,"game-state")) {
+				stmt.executeUpdate("INSERT INTO gamestate VALUES ('game-state','SETUP')");
+			}
+
+			if (!gamestateContainsKey(stmt,"hider")) {
+				stmt.executeUpdate("INSERT INTO gamestate VALUES ('hider','1')");
+			}
+
 		} catch (SQLException e) {
 			log.error("Unable to migrate!", e);
+		}
+	}
+
+	private boolean gamestateContainsKey(Statement stmt, String key) throws SQLException {
+		try (ResultSet rs = stmt.executeQuery("SELECT 1 FROM gamestate WHERE `key` = '%s';".formatted(key))) {
+			return rs.next();
 		}
 	}
 
@@ -153,13 +183,61 @@ public class MariaDatabaseImpl implements DatabaseInterface {
 	}
 
 	@Override
-	public int getCurrentHiderId() {
-		return 0;
+	public int getCurrentHiderId() throws SQLException {
+		String v = getValueFromKeystore("hider");
+		if (v == null) return -1;
+		else return Integer.parseInt(v);
 	}
 
 	@Override
-	public boolean setCurrentHider(int i) {
-		return false;
+	public boolean setCurrentHider(int i) throws SQLException {
+		return setValueInKeystore("hider", String.valueOf(i));
+	}
+
+	@Nullable
+	@Override
+	public ZonedDateTime getStartTime() throws SQLException {
+		try {
+			String v = getValueFromKeystore("game-start");
+			if(v == null) return null;
+			else return ZonedDateTime.parse(v);
+		} catch (DateTimeParseException e) {
+			return null;
+		}
+	}
+
+	@Override
+	public GameState getGameState() throws SQLException {
+		String v = getValueFromKeystore("game-state");
+		if (v == null) return GameState.ERROR;
+		else return GameState.valueOf(v);
+	}
+
+	private @Nullable String getValueFromKeystore(String key) throws SQLException {
+		try	(PreparedStatement stmt = conn.prepareStatement("SELECT 1 FROM gamestate WHERE `key` = ?;")) {
+			stmt.setString(1,key);
+			try(ResultSet rs = stmt.executeQuery()) {
+				if(rs.next()) {
+					return rs.getString("value");
+				} else return null;
+			}
+		}
+	}
+
+	private boolean setValueInKeystore(String key, String value) throws SQLException {
+		if(getValueFromKeystore(key) != null) {
+			try (PreparedStatement stmt = conn.prepareStatement("UPDATE gamestate SET value=? WHERE `key`=?")) {
+				stmt.setString(1,value);
+				stmt.setString(2,key);
+				return stmt.executeUpdate() == 1;
+			}
+		} else {
+			try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO gamestate (`key`, value) VALUES (?,?)")) {
+				stmt.setString(1,key);
+				stmt.setString(2,value);
+				return stmt.executeUpdate() == 1;
+			}
+		}
 	}
 
 	@Override

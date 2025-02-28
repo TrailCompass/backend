@@ -22,7 +22,6 @@ ENV PORT=8080
     
 WORKDIR $APP_HOME
 COPY --from=build $APP_HOME/server/build/libs/server-*.jar $APP_HOME/server.jar
-RUN mkdir "/usr/app/plugins"
 
 HEALTHCHECK --interval=5m --timeout=3s \
   CMD curl -f http://localhost:$PORT/health || exit 1
