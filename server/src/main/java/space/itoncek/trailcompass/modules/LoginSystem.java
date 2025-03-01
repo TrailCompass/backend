@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.TrailServer;
 import space.itoncek.trailcompass.objects.UserMeta;
 import space.itoncek.trailcompass.objects.User;
-import static space.itoncek.trailcompass.utils.Randoms.generateRandomString;
+import static space.itoncek.trailcompass.gamedata.utils.Randoms.generateRandomString;
 
 import java.sql.SQLException;
 import java.util.Optional;

@@ -1,5 +1,8 @@
 package space.itoncek.trailcompass;
 
+import java.io.IOException;
+import java.sql.SQLException;
+
 import io.javalin.Javalin;
 import static io.javalin.apibuilder.ApiBuilder.*;
 import io.javalin.http.Context;
@@ -17,16 +20,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.database.DatabaseInterface;
 import space.itoncek.trailcompass.database.MariaDatabaseImpl;
-import space.itoncek.trailcompass.database.StorageDatabaseImpl;
+import static space.itoncek.trailcompass.gamedata.utils.Randoms.generateRandomString;
+import static space.itoncek.trailcompass.gamedata.utils.Randoms.pickRandomStrings;
+import space.itoncek.trailcompass.gamedata.utils.TextGraphics;
 import space.itoncek.trailcompass.modules.*;
-import space.itoncek.trailcompass.packages.PackageLoader;
-import static space.itoncek.trailcompass.utils.Randoms.generateRandomString;
-import static space.itoncek.trailcompass.utils.Randoms.pickRandomStrings;
-import space.itoncek.trailcompass.utils.TextGraphics;
-
-import java.io.File;
-import java.io.IOException;
-import java.sql.SQLException;
 
 public class TrailServer {
 	private static final Logger log = LoggerFactory.getLogger(TrailServer.class);
@@ -35,7 +32,6 @@ public class TrailServer {
 	public final DatabaseInterface db;
 	public final MessageQueueModule mq;
 	public final MapServer mapserver;
-	public final PackageLoader packageLoader;
 	public final LocationModule lm;
 	public final GameManagerModule gamemanager;
 	private final int PORT = System.getenv("PORT") == null ? 8080 : Integer.parseInt(System.getenv("PORT"));
@@ -44,8 +40,8 @@ public class TrailServer {
 
 	public TrailServer() {
 		try {
-			if(dev) db = new StorageDatabaseImpl(new File("./data/db.db"));
-			else db = new MariaDatabaseImpl("jdbc:mariadb://%s/%s".formatted(System.getenv("MARIA"), System.getenv("MARIA_DB")), System.getenv("MARIA_USER"), System.getenv("MARIA_PASSWORD"));
+			//if(dev) db = new StorageDatabaseImpl(new File("./data/db.db"));
+			/*else*/ db = new MariaDatabaseImpl("jdbc:mariadb://%s/%s".formatted(System.getenv("MARIA"), System.getenv("MARIA_DB")), System.getenv("MARIA_USER"), System.getenv("MARIA_PASSWORD"));
 		} catch (SQLException e) {
 			log.error("Unable to init database manager", e);
 			throw new RuntimeException();
@@ -62,16 +58,6 @@ public class TrailServer {
 		mq = new MessageQueueModule(this);
 		mapserver = new MapServer(this);
 		gamemanager = new GameManagerModule(this);
-
-		//send to bottom!
-		packageLoader = new PackageLoader(this);
-
-		try {
-			packageLoader.loadPlugins(new File("./packages/"));
-		} catch (Exception e) {
-			log.error("Unable to load plugins");
-			throw new RuntimeException(e);
-		}
 
 		healthMonitor = new HealthMonitorModule(this);
 
@@ -105,9 +91,12 @@ public class TrailServer {
 					get("getServerMap", mapserver::getServerMap);
 				});
 				path("gamemanager", ()-> {
+					get("gameState", gamemanager::getGameState);
 					get("currentHider", gamemanager::getCurrentHider);
 					post("currentHider", gamemanager::setCurrentHider);
+					post("cycleHider", gamemanager::cycleHider);
 					get("startTime", gamemanager::getStartTime);
+					post("finishSetup", gamemanager::finishSetup);
 				});
 				get("health", healthMonitor::check);
 				get("/", this::getVersion);
@@ -169,8 +158,9 @@ public class TrailServer {
 
 	private void start() throws SQLException {
 		app.start(PORT);
-		packageLoader.loadPlugins();
 		db.migrate();
+		mapserver.setup();
+		gamemanager.setup();
 		if (dev) log.warn(TextGraphics.generateDevWarningBox());
 		log.info(TextGraphics.generateIntroMural());
 		if (db.needsDefaultUser()) {
@@ -186,7 +176,6 @@ public class TrailServer {
 	}
 
 	private void stop() throws IOException {
-		packageLoader.unloadPlugins();
 		app.stop();
 		db.close();
 	}

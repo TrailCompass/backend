@@ -1,14 +1,5 @@
 package space.itoncek.trailcompass.database;
 
-import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import space.itoncek.trailcompass.messages.Message;
-import space.itoncek.trailcompass.messages.MessageContent;
-import space.itoncek.trailcompass.objects.GameState;
-import space.itoncek.trailcompass.objects.User;
-import space.itoncek.trailcompass.objects.UserMeta;
-
 import java.io.*;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -17,6 +8,15 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
+
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import space.itoncek.trailcompass.objects.GameState;
+import space.itoncek.trailcompass.objects.User;
+import space.itoncek.trailcompass.objects.UserMeta;
+import space.itoncek.trailcompass.objects.messages.Message;
+import space.itoncek.trailcompass.objects.messages.MessageContent;
 
 public class StorageDatabaseImpl implements DatabaseInterface {
 	private static final Logger log = LoggerFactory.getLogger(StorageDatabaseImpl.class);
@@ -221,6 +221,12 @@ public class StorageDatabaseImpl implements DatabaseInterface {
 			log.warn("Unable to get current hider from the database", e);
 			return GameState.ERROR;
 		}
+	}
+
+	@Nullable
+	@Override
+	public List<User> listUsers() {
+		return List.of();
 	}
 
 

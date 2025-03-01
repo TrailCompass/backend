@@ -35,9 +35,6 @@ public class HealthMonitorModule {
 		boolean mapserver = server.mapserver.isHealthy();
 		sb.append("Login: ").append(mapserver?"Online":"Offline").append("\n");
 
-		boolean packages = server.packageLoader.isHealthy();
-		sb.append("PackageLoader: ").append(packages?"Online":"Offline").append("\n");
-
-		ctx.status((login||mapserver||packages)?HttpStatus.OK:HttpStatus.INTERNAL_SERVER_ERROR).result(sb.toString());
+		ctx.status((login||mapserver)?HttpStatus.OK:HttpStatus.INTERNAL_SERVER_ERROR).result(sb.toString());
 	}
 }

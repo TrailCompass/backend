@@ -3,8 +3,8 @@ package space.itoncek.trailcompass.database;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import space.itoncek.trailcompass.messages.Message;
-import space.itoncek.trailcompass.messages.MessageContent;
+import space.itoncek.trailcompass.objects.messages.Message;
+import space.itoncek.trailcompass.objects.messages.MessageContent;
 import space.itoncek.trailcompass.objects.GameState;
 import space.itoncek.trailcompass.objects.User;
 import space.itoncek.trailcompass.objects.UserMeta;
@@ -213,12 +213,27 @@ public class MariaDatabaseImpl implements DatabaseInterface {
 		else return GameState.valueOf(v);
 	}
 
+	@Nullable
+	@Override
+	public List<User> listUsers() throws SQLException {
+		try(ResultSet rs = conn.createStatement().executeQuery("SELECT * FROM users;")) {
+			List<User> users = new ArrayList<>();
+			while (rs.next()) {
+				users.add(new User(rs.getInt("user_id"), rs.getString("user_nickname"),rs.getBoolean("user_isadmin"), rs.getBoolean("user_ishider")));
+			}
+			return users;
+		} catch (SQLException e) {
+			log.error("Unable to get user meta from database! ",e);
+			return null;
+		}
+	}
+
 	private @Nullable String getValueFromKeystore(String key) throws SQLException {
-		try	(PreparedStatement stmt = conn.prepareStatement("SELECT 1 FROM gamestate WHERE `key` = ?;")) {
+		try	(PreparedStatement stmt = conn.prepareStatement("SELECT * FROM gamestate WHERE `key` = ? LIMIT 1;")) {
 			stmt.setString(1,key);
 			try(ResultSet rs = stmt.executeQuery()) {
 				if(rs.next()) {
-					return rs.getString("value");
+					return rs.getString(2);
 				} else return null;
 			}
 		}
