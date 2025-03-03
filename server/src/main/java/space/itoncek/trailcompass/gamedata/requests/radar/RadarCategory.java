@@ -2,7 +2,6 @@ package space.itoncek.trailcompass.gamedata.requests.radar;
 
 import java.util.List;
 
-import org.slf4j.Logger;
 import space.itoncek.trailcompass.TrailServer;
 import space.itoncek.trailcompass.objects.Request;
 import space.itoncek.trailcompass.objects.RequestCategory;

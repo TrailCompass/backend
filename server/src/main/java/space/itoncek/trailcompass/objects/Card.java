@@ -21,7 +21,7 @@ public interface Card {
 	String getDescription();
 
 	/**
-	 * @return true if can be used
+	 * @return true if this card can be used
 	 */
 	boolean canUse();
 

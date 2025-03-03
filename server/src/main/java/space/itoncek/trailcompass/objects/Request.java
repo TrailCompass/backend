@@ -31,7 +31,7 @@ public interface Request {
 	Type getRequestType();
 	/**
 	 * Supplies "preview" information to the hider
-	 * @return true if it is a hit, false otherwise, can be emtpy if request is not boolean
+	 * @return Optional, true if it is a hit, false otherwise, can be emtpy if request is not boolean
 	 */
 	default Optional<Boolean> predictBool() {
 		return Optional.empty();

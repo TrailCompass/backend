@@ -1,16 +1,16 @@
 package space.itoncek.trailcompass.modules;
 
+import java.util.Objects;
+import java.util.Optional;
+
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.*;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import io.javalin.http.*;
 import io.javalin.http.ContentType;
-import io.javalin.http.Context;
-import io.javalin.http.HandlerType;
-import io.javalin.http.Header;
-import io.javalin.http.HttpStatus;
 import io.javalin.openapi.*;
 import javalinjwt.JWTGenerator;
 import javalinjwt.JWTProvider;
@@ -21,12 +21,9 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.TrailServer;
-import space.itoncek.trailcompass.objects.UserMeta;
-import space.itoncek.trailcompass.objects.User;
 import static space.itoncek.trailcompass.gamedata.utils.Randoms.generateRandomString;
-
-import java.sql.SQLException;
-import java.util.Optional;
+import space.itoncek.trailcompass.objects.User;
+import space.itoncek.trailcompass.objects.UserMeta;
 
 public class LoginSystem {
 	private static final Logger log = LoggerFactory.getLogger(LoginSystem.class);
@@ -36,7 +33,7 @@ public class LoginSystem {
 	public static JWTProvider<UserMeta> provider;
 	private final TrailServer server;
 
-	public LoginSystem(TrailServer server) throws SQLException {
+	public LoginSystem(TrailServer server) {
 		this.server = server;
 
 		algorithm = Algorithm.HMAC512(generateRandomString(1024, true, true));
@@ -131,7 +128,7 @@ public class LoginSystem {
 	public void register(Context ctx) {
 		if (ctx.status() == HttpStatus.UNAUTHORIZED || ctx.status() == HttpStatus.IM_A_TEAPOT) return;
 		try {
-			Optional<DecodedJWT> decodedJWT = provider.validateToken(ctx.header(Header.AUTHORIZATION).substring(7));
+			Optional<DecodedJWT> decodedJWT = provider.validateToken(Objects.requireNonNull(ctx.header(Header.AUTHORIZATION)).substring(7));
 			if (decodedJWT.isEmpty()) {
 				ctx.status(400).result(new JSONObject().put("error", "Neplatný token!").toString(4));
 				return;
@@ -199,7 +196,7 @@ public class LoginSystem {
 		if (h.path().startsWith("/uac/login")) return;
 		else if (h.path().equals("/uac/verifyLogin")) return;
 		else if (h.path().equals("/")) return;
-		else if (h.method().equals(HandlerType.GET) && /*server.dev*/ true) return;
+		else if (h.method().equals(HandlerType.GET) && server.dev) return;
 
 		try {
 			String header = h.header(Header.AUTHORIZATION);
@@ -219,7 +216,7 @@ public class LoginSystem {
 	}
 
 	public @Nullable User getUser(Context ctx) {
-		Optional<DecodedJWT> decodedJWT = provider.validateToken(ctx.header(Header.AUTHORIZATION).substring(7));
+		Optional<DecodedJWT> decodedJWT = provider.validateToken(Objects.requireNonNull(ctx.header(Header.AUTHORIZATION)).substring(7));
 		if (decodedJWT.isEmpty()) {
 			return null;
 		}

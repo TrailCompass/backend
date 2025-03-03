@@ -1,6 +1,7 @@
 package space.itoncek.trailcompass.database;
 
 import java.io.*;
+import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -12,7 +13,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import space.itoncek.trailcompass.objects.GameState;
 import space.itoncek.trailcompass.objects.User;
 import space.itoncek.trailcompass.objects.UserMeta;
 import space.itoncek.trailcompass.objects.messages.Message;
@@ -22,7 +22,6 @@ public class StorageDatabaseImpl implements DatabaseInterface {
 	private static final Logger log = LoggerFactory.getLogger(StorageDatabaseImpl.class);
 	private final File db;
 	private final ReentrantLock lock = new ReentrantLock();
-
 
 	public StorageDatabaseImpl(File db) {
 		this.db = db;
@@ -120,7 +119,7 @@ public class StorageDatabaseImpl implements DatabaseInterface {
 	public boolean createUser(String name, String passwordhash, boolean isAdmin) {
 		try {
 			Database d = getDatabase();
-			d.users.add(new Database.User(findHighestIndexUser(d.users) + 1, name, passwordhash, isAdmin, false));
+			d.users.add(new Database.User(findHighestIndexUser(d.users) + 1, name, passwordhash, isAdmin));
 			saveDatabase(d);
 			return true;
 		} catch (IOException | ClassNotFoundException e) {
@@ -212,27 +211,55 @@ public class StorageDatabaseImpl implements DatabaseInterface {
 		}
 	}
 
-	@Override
-	public GameState getGameState() {
-		try {
-			Database d = getDatabase();
-			return d.gamestate.game_state;
-		} catch (IOException | ClassNotFoundException e) {
-			log.warn("Unable to get current hider from the database", e);
-			return GameState.ERROR;
-		}
-	}
-
 	@Nullable
 	@Override
 	public List<User> listUsers() {
 		return List.of();
 	}
 
+	@Override
+	public boolean setSetupLocked(boolean lock) {
+		try {
+			Database d = getDatabase();
+			d.gamestate.setupLocked = lock;
+			saveDatabase(d);
+			return true;
+		} catch (IOException | ClassNotFoundException e) {
+			log.warn("Unable to save setuplock to the database", e);
+			return false;
+		}
+	}
+
+	@Override
+	public boolean getSetupLocked() {
+		try {
+			Database d = getDatabase();
+			return d.gamestate.setupLocked;
+		} catch (IOException | ClassNotFoundException e) {
+			log.warn("Unable to get setuplock from the database", e);
+			return false;
+		}
+	}
+
+	@Override
+	public Duration setHidingTime() {
+		return null;
+	}
+
+	@Override
+	public boolean setHidingTime(Duration hiding_time) {
+		return false;
+	}
+
+	@Override
+	public boolean isInRestPeriod(ZonedDateTime dateTime) {
+		return false;
+	}
 
 	@Override
 	public void close() {
-
+		lock.lock();
+		lock.unlock();
 	}
 
 	private int findHighestIndexUser(List<Database.User> users) {
@@ -260,10 +287,11 @@ public class StorageDatabaseImpl implements DatabaseInterface {
 			database.users = new ArrayList<>();
 			database.messages = new ArrayList<>();
 			database.hiderId = -1;
-			database.gamestate = new GameStateTable(ZonedDateTime.now(),GameState.SETUP);
+			database.gamestate = new GameStateTable(ZonedDateTime.now(),Duration.ofHours(3),false);
 			return database;
 		}
 
+		@SuppressWarnings("CanBeFinal")
 		public static final class User implements Serializable {
 			public int id;
 			public String nickname;
@@ -271,12 +299,12 @@ public class StorageDatabaseImpl implements DatabaseInterface {
 			public boolean isAdmin;
 			public boolean isHider;
 
-			private User(int id, String nickname, String passwordHash, boolean isAdmin, boolean isHider) {
+			private User(int id, String nickname, String passwordHash, boolean isAdmin) {
 				this.id = id;
 				this.nickname = nickname;
 				this.passwordHash = passwordHash;
 				this.isAdmin = isAdmin;
-				this.isHider = isHider;
+				this.isHider = false;
 			}
 
 			@Override
@@ -307,6 +335,7 @@ public class StorageDatabaseImpl implements DatabaseInterface {
 			}
 		}
 
+		@SuppressWarnings("CanBeFinal")
 		public static final class Message implements Serializable {
 			public int id;
 			public int sender_id;
@@ -352,13 +381,16 @@ public class StorageDatabaseImpl implements DatabaseInterface {
 
 		}
 
+		@SuppressWarnings("CanBeFinal")
 		public static final class GameStateTable implements Serializable {
 			public ZonedDateTime game_start;
-			public GameState game_state;
+			public Duration hiding_time;
+			public boolean setupLocked;
 
-			public GameStateTable(ZonedDateTime game_start, GameState game_state) {
+			public GameStateTable(ZonedDateTime game_start, Duration hiding_time, boolean setup_locked) {
 				this.game_start = game_start;
-				this.game_state = game_state;
+				this.hiding_time = hiding_time;
+				this.setupLocked = setup_locked;
 			}
 
 			@Override
@@ -367,19 +399,19 @@ public class StorageDatabaseImpl implements DatabaseInterface {
 				if (obj == null || obj.getClass() != this.getClass()) return false;
 				var that = (GameStateTable) obj;
 				return Objects.equals(this.game_start, that.game_start) &&
-					   Objects.equals(this.game_state, that.game_state);
+					   Objects.equals(this.setupLocked, that.setupLocked);
 			}
 
 			@Override
 			public int hashCode() {
-				return Objects.hash(game_start, game_state);
+				return Objects.hash(game_start, setupLocked);
 			}
 
 			@Override
 			public String toString() {
 				return "GameStateTable[" +
 					   "game_start=" + game_start + ", " +
-					   "game_state=" + game_state + ']';
+					   "setupLocked=" + setupLocked + ']';
 			}
 		}
 	}

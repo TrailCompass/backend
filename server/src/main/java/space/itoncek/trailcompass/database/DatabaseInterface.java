@@ -1,16 +1,16 @@
 package space.itoncek.trailcompass.database;
 
-import org.jetbrains.annotations.Nullable;
-import space.itoncek.trailcompass.objects.messages.Message;
-import space.itoncek.trailcompass.objects.messages.MessageContent;
-import space.itoncek.trailcompass.objects.GameState;
-import space.itoncek.trailcompass.objects.User;
-import space.itoncek.trailcompass.objects.UserMeta;
-
 import java.io.Closeable;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.List;
+
+import org.jetbrains.annotations.Nullable;
+import space.itoncek.trailcompass.objects.User;
+import space.itoncek.trailcompass.objects.UserMeta;
+import space.itoncek.trailcompass.objects.messages.Message;
+import space.itoncek.trailcompass.objects.messages.MessageContent;
 
 public interface DatabaseInterface extends Closeable {
 	/**
@@ -112,18 +112,20 @@ public interface DatabaseInterface extends Closeable {
 	 * @throws SQLException database access error
 	 */
 	@Nullable ZonedDateTime getStartTime() throws SQLException;
-
-	/**
-	 * @return game state enum
-	 *
-	 * @throws SQLException database access error
-	 */
-	@Nullable GameState getGameState() throws SQLException;
-
 	/**
 	 * @return List all players
 	 *
 	 * @throws SQLException database access error
 	 */
 	@Nullable List<User> listUsers() throws SQLException;
+
+	boolean setSetupLocked(boolean lock) throws SQLException;
+
+	boolean getSetupLocked() throws SQLException;
+
+	Duration setHidingTime() throws SQLException;
+
+	boolean setHidingTime(Duration hiding_time) throws SQLException;
+
+	boolean isInRestPeriod(ZonedDateTime dateTime) throws SQLException;
 }

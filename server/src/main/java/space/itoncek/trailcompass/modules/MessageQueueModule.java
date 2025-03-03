@@ -61,10 +61,11 @@ public class MessageQueueModule {
 		return server.db.getMessages(receiver_id);
 	}
 
+	// TODO)) Fill this method
 	public void addMessage(@NotNull Context ctx) {
-
 	}
 
+	// TODO)) Fill this method
 	public void getMessages(@NotNull Context ctx) {
 
 	}

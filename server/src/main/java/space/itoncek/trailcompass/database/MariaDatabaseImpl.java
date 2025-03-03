@@ -1,20 +1,21 @@
 package space.itoncek.trailcompass.database;
 
+import java.io.IOException;
+import java.sql.*;
+import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import space.itoncek.trailcompass.objects.messages.Message;
-import space.itoncek.trailcompass.objects.messages.MessageContent;
-import space.itoncek.trailcompass.objects.GameState;
 import space.itoncek.trailcompass.objects.User;
 import space.itoncek.trailcompass.objects.UserMeta;
-
-import java.io.IOException;
-import java.sql.*;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.List;
+import space.itoncek.trailcompass.objects.messages.Message;
+import space.itoncek.trailcompass.objects.messages.MessageContent;
 
 public class MariaDatabaseImpl implements DatabaseInterface {
 	private static final Logger log = LoggerFactory.getLogger(MariaDatabaseImpl.class);
@@ -68,16 +69,29 @@ public class MariaDatabaseImpl implements DatabaseInterface {
 					)
 					COLLATE='utf8mb4_general_ci' ENGINE=InnoDB;""");
 
-			if (!gamestateContainsKey(stmt,"game-start")) {
+			stmt.executeUpdate("""
+					CREATE TABLE IF NOT EXISTS `rest_periods` (
+						`id` INT NOT NULL,
+						`start` VARCHAR(255) NOT NULL DEFAULT '' COLLATE 'utf8mb4_general_ci',
+						`end` VARCHAR(255) NOT NULL DEFAULT '' COLLATE 'utf8mb4_general_ci',
+						PRIMARY KEY (`id`)
+					)
+					COLLATE='utf8mb4_general_ci' ENGINE=InnoDB;""");
+
+			if (gamestateMissingKey(stmt, "game-start")) {
 				stmt.executeUpdate("INSERT INTO gamestate VALUES ('game-start','1970-01-01T00:00:00Z[UTC]')");
 			}
 
-			if (!gamestateContainsKey(stmt,"game-state")) {
-				stmt.executeUpdate("INSERT INTO gamestate VALUES ('game-state','SETUP')");
+			if (gamestateMissingKey(stmt, "setup-lock")) {
+				stmt.executeUpdate("INSERT INTO gamestate VALUES ('setup-lock','false')");
 			}
 
-			if (!gamestateContainsKey(stmt,"hider")) {
+			if (gamestateMissingKey(stmt, "hider")) {
 				stmt.executeUpdate("INSERT INTO gamestate VALUES ('hider','1')");
+			}
+
+			if (gamestateMissingKey(stmt, "hiding-time")) {
+				stmt.executeUpdate("INSERT INTO gamestate VALUES ('hiding-time','%s')".formatted(Duration.of(2, ChronoUnit.HOURS).getSeconds()));
 			}
 
 		} catch (SQLException e) {
@@ -85,9 +99,9 @@ public class MariaDatabaseImpl implements DatabaseInterface {
 		}
 	}
 
-	private boolean gamestateContainsKey(Statement stmt, String key) throws SQLException {
+	private boolean gamestateMissingKey(Statement stmt, String key) throws SQLException {
 		try (ResultSet rs = stmt.executeQuery("SELECT 1 FROM gamestate WHERE `key` = '%s';".formatted(key))) {
-			return rs.next();
+			return !rs.next();
 		}
 	}
 
@@ -206,13 +220,6 @@ public class MariaDatabaseImpl implements DatabaseInterface {
 		}
 	}
 
-	@Override
-	public GameState getGameState() throws SQLException {
-		String v = getValueFromKeystore("game-state");
-		if (v == null) return GameState.ERROR;
-		else return GameState.valueOf(v);
-	}
-
 	@Nullable
 	@Override
 	public List<User> listUsers() throws SQLException {
@@ -222,9 +229,43 @@ public class MariaDatabaseImpl implements DatabaseInterface {
 				users.add(new User(rs.getInt("user_id"), rs.getString("user_nickname"),rs.getBoolean("user_isadmin"), rs.getBoolean("user_ishider")));
 			}
 			return users;
-		} catch (SQLException e) {
-			log.error("Unable to get user meta from database! ",e);
-			return null;
+		}
+	}
+
+	@Override
+	public boolean setSetupLocked(boolean lock) throws SQLException {
+		return setValueInKeystore("setup-lock", Boolean.toString(lock));
+	}
+
+	@Override
+	public boolean getSetupLocked() throws SQLException {
+		String v = getValueFromKeystore("setup-lock");
+		if (v == null) return false;
+		else return Boolean.parseBoolean(v);
+	}
+
+	@Override
+	public Duration setHidingTime() throws SQLException {
+		String v = getValueFromKeystore("hiding-time");
+		if (v == null) return null;
+		else return Duration.ofSeconds(Long.parseLong(v));
+	}
+
+	@Override
+	public boolean setHidingTime(Duration hiding_time) throws SQLException {
+		return setValueInKeystore("hiding-time", String.valueOf(hiding_time.getSeconds()));
+	}
+
+	@Override
+	public boolean isInRestPeriod(ZonedDateTime dateTime) throws SQLException {
+		try(ResultSet rs = conn.createStatement().executeQuery("SELECT * FROM rest_periods;")) {
+			boolean result = false;
+			while (rs.next()) {
+				ZonedDateTime periodStart = ZonedDateTime.parse(rs.getString("start"));
+				ZonedDateTime periodEnd = ZonedDateTime.parse(rs.getString("end"));
+				result |= (dateTime.isAfter(periodStart) && dateTime.isBefore(periodEnd));
+			}
+			return result;
 		}
 	}
 

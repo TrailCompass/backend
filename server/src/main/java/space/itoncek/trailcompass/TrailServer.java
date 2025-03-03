@@ -47,12 +47,7 @@ public class TrailServer {
 			throw new RuntimeException();
 		}
 
-		try {
-			login = new LoginSystem(this);
-		} catch (SQLException e) {
-			log.error("Unable to init login system");
-			throw new RuntimeException();
-		}
+		login = new LoginSystem(this);
 
 		lm = new LocationModule(this);
 		mq = new MessageQueueModule(this);
@@ -97,6 +92,8 @@ public class TrailServer {
 					post("cycleHider", gamemanager::cycleHider);
 					get("startTime", gamemanager::getStartTime);
 					post("finishSetup", gamemanager::finishSetup);
+
+					ws("await", gamemanager::awaitWS);
 				});
 				get("health", healthMonitor::check);
 				get("/", this::getVersion);
@@ -135,12 +132,7 @@ public class TrailServer {
 	public static void main(String[] args) {
 		TrailServer ts = new TrailServer();
 
-		try {
-			ts.start();
-		} catch (SQLException e) {
-			log.error("Unable to start the server!", e);
-			throw new RuntimeException();
-		}
+		ts.start();
 
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			try {
@@ -156,7 +148,7 @@ public class TrailServer {
 				.withSecurity(security -> security.withBearerAuth("JWT")));
 	}
 
-	private void start() throws SQLException {
+	private void start() {
 		app.start(PORT);
 		db.migrate();
 		mapserver.setup();

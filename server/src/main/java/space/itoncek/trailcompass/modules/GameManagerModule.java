@@ -1,6 +1,7 @@
 package space.itoncek.trailcompass.modules;
 
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -9,6 +10,8 @@ import java.util.List;
 import io.javalin.http.ContentType;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
+import io.javalin.websocket.WsConfig;
+import io.javalin.websocket.WsContext;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +25,6 @@ import space.itoncek.trailcompass.objects.RequestCategory;
 import space.itoncek.trailcompass.objects.User;
 
 public class GameManagerModule {
-
     private static final Logger log = LoggerFactory.getLogger(GameManagerModule.class);
     private final TrailServer server;
 	private final List<Card> cards = new ArrayList<>();
@@ -87,6 +89,7 @@ public class GameManagerModule {
 			User selectedUser = users.get(nextHiderIndex % users.size());
 
 			server.db.setCurrentHider(selectedUser.id());
+			sendUpdateMessage();
 			ctx.status(HttpStatus.OK).contentType(ContentType.TEXT_PLAIN).result("200 OK");
 		} catch (SQLException e) {
 			log.warn("DATABASE ACCESS ERROR",e);
@@ -106,6 +109,7 @@ public class GameManagerModule {
 
 		try {
 			if (server.db.setCurrentHider(Integer.parseInt(ctx.body()))) {
+				sendUpdateMessage();
 				ctx.status(HttpStatus.OK).contentType(ContentType.TEXT_PLAIN).result("200 OK");
 			} else {
 				ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(ContentType.TEXT_PLAIN).result("500 INTERNAL SERVER ERROR");
@@ -135,7 +139,7 @@ public class GameManagerModule {
         if (ctx.status() == HttpStatus.UNAUTHORIZED || ctx.status() == HttpStatus.IM_A_TEAPOT) return;
 
 		try {
-            GameState gameState = server.db.getGameState();
+            GameState gameState = determineGameState();
             if(gameState == null||gameState == GameState.ERROR) {
                 log.warn("Unable to find game state in the database!");
                 ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(ContentType.TEXT_PLAIN).result("500 INTERNAL SERVER ERROR");
@@ -148,6 +152,67 @@ public class GameManagerModule {
 
 	public void finishSetup(@NotNull Context ctx) {
 		if (ctx.status() == HttpStatus.UNAUTHORIZED || ctx.status() == HttpStatus.IM_A_TEAPOT) return;
-		ctx.status(HttpStatus.OK).contentType(ContentType.TEXT_PLAIN).result("200 OK");
+
+		try {
+			if (server.db.setSetupLocked(true)) {
+				ctx.status(HttpStatus.OK).contentType(ContentType.TEXT_PLAIN).result("200 OK");
+				sendUpdateMessage();
+			} else {
+				log.warn("DATABASE ACCESS ERROR");
+				ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(ContentType.TEXT_PLAIN).result("500 INTERNAL SERVER ERROR");
+			}
+		} catch (SQLException e) {
+			log.warn("DATABASE ACCESS ERROR",e);
+			ctx.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(ContentType.TEXT_PLAIN).result("500 INTERNAL SERVER ERROR");
+		}
+	}
+
+	private GameState determineGameState() throws SQLException {
+		ZonedDateTime now = ZonedDateTime.now();
+
+		if(!server.db.getSetupLocked()) return GameState.SETUP;
+		if(now.isBefore(server.db.getStartTime())) return GameState.OUTSIDE_OF_GAME;
+		if (isInHidePeriod()) return GameState.MOVE_PERIOD;
+		if (isInRestPeriod()) return GameState.REST_PERIOD;
+		return GameState.INGAME;
+	}
+
+	private boolean isInHidePeriod() throws SQLException {
+		Duration hidingTime = server.db.setHidingTime();
+		ZonedDateTime startTime = server.db.getStartTime();
+		if (startTime == null) {throw new SQLException("Unable to parse starttime!");}
+		ZonedDateTime endTime = startTime.plus(hidingTime);
+
+		ZonedDateTime now = ZonedDateTime.now();
+		return (now.isAfter(startTime) && now.isBefore(endTime));
+	}
+
+	private boolean isInRestPeriod() throws SQLException {
+		return server.db.isInRestPeriod(ZonedDateTime.now());
+	}
+
+	final List<WsContext> ctxs = new ArrayList<>();
+
+	private void sendUpdateMessage() {
+		for (WsContext ctx : ctxs) {
+			if(ctx.session.isOpen()) {
+				ctx.send("update");
+			} else {
+				ctxs.remove(ctx);
+			}
+		}
+	}
+
+	public void awaitWS(WsConfig wsc) {
+		wsc.onConnect(ctx-> {
+			ctx.session.setIdleTimeout(Duration.ofDays(365));
+			ctxs.add(ctx);
+		});
+
+		wsc.onClose(ctx -> {
+			if (ctxs.stream().map(WsContext::sessionId).toList().contains(ctx.sessionId())) {
+				ctxs.removeIf(x -> x.sessionId().equals(ctx.sessionId()));
+			}
+		});
 	}
 }
