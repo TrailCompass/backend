@@ -1,8 +1,7 @@
 # TrailCompass Backend
 
 > [!WARNING]
-> This repo is under active development, use at your own risk. We are not responsible for any damage caused due to this
-> code!
+> This repo is under active development, use at your own risk. We are not responsible for any damage caused due to this code!
 
 Wanted to play Hide & Seek across a city, country or a continent? Well you've probably encountered issues making
 tracking of other players work. Well fear not, we've made TrailCompass to help. **This is the server repo, for setup,
@@ -14,7 +13,7 @@ property of Watch Nebula LLC. Go watch & subscribe at [nebula.tv/jetlag](https:/
 
 ## Building
 
-`go build .`
+`./gradlew clean build`
 
 ## Running in production
 

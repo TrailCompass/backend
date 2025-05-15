@@ -5,11 +5,14 @@ plugins {
 group = 'space.itoncek.trailcompass'
 version = parent.version
 
-String javalinVersion = "6.4.0"
+String javalinVersion = "6.6.0"
 
 repositories {
     mavenCentral()
 }
+
+String lombokVersion = "1.18.38"
+String hibernateVersion = "7.0.0.CR1"
 
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
@@ -24,10 +27,19 @@ dependencies {
     implementation 'commons-codec:commons-codec:1.16.0'
     implementation("commons-io:commons-io:2.15.1")
     implementation('com.geodesk:geodesk:0.2.1')
+
     implementation 'io.javalin.community.openapi:javalin-openapi-plugin:' + javalinVersion
     implementation 'io.javalin.community.openapi:javalin-swagger-plugin:' + javalinVersion
-
     annotationProcessor 'io.javalin.community.openapi:openapi-annotation-processor:' + javalinVersion
+
+    compileOnly("org.projectlombok:lombok:$lombokVersion")
+    implementation("org.hibernate.orm:hibernate-processor:$hibernateVersion")
+    annotationProcessor("org.projectlombok:lombok:$lombokVersion")
+    implementation("org.hibernate.orm:hibernate-core:$hibernateVersion")
+    implementation "org.hibernate.orm:hibernate-hikaricp:$hibernateVersion"
+    annotationProcessor("org.hibernate.orm:hibernate-jpamodelgen:$hibernateVersion")
+    implementation 'jakarta.transaction:jakarta.transaction-api:2.0.1'
+    implementation 'org.postgresql:postgresql:42.7.5'
 }
 
 jar {
@@ -37,7 +49,7 @@ jar {
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
     exclude("META-INF/*.RSA")
     exclude("META-INF/*.SF")
 }
@@ -47,6 +59,6 @@ test {
 }
 
 java {
-    sourceCompatibility JavaVersion.VERSION_16
-    targetCompatibility JavaVersion.VERSION_16
+    sourceCompatibility JavaVersion.VERSION_21
+    targetCompatibility JavaVersion.VERSION_21
 }
