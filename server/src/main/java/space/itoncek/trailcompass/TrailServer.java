@@ -8,8 +8,10 @@ import org.hibernate.tool.schema.Action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.commons.utils.Base64Utils;
+import space.itoncek.trailcompass.database.LocationEntry;
 import space.itoncek.trailcompass.database.PerformanceTrace;
 import space.itoncek.trailcompass.database.DatabasePlayer;
+import space.itoncek.trailcompass.modules.LocationManager;
 
 import java.io.IOException;
 import java.util.TreeSet;
@@ -21,11 +23,13 @@ public class TrailServer {
 	public final SessionFactory ef;
 	private final Javalin app;
 	private final TrailCompassHandler tch;
+	public final LocationManager lm;
 
 	public TrailServer() {
 		ef = new HibernatePersistenceConfiguration("TrailCompass")
 				.managedClass(PerformanceTrace.class)
 				.managedClass(DatabasePlayer.class)
+				.managedClass(LocationEntry.class)
 				// PostgreSQL
 				.jdbcUrl("jdbc:postgresql://localhost:5002/TrailCompass")
 				// Credentials
@@ -39,6 +43,7 @@ public class TrailServer {
 				.createEntityManagerFactory();
 
 		tch = new TrailCompassHandler(this);
+		lm = new LocationManager(this);
 
 		app = Javalin.create(cfg -> {
 			cfg.useVirtualThreads = true;
@@ -47,35 +52,31 @@ public class TrailServer {
 			cfg.jetty.timeoutStatus = 408;
 			cfg.jetty.clientAbortStatus = 499;
 			cfg.jetty.modifyServer(server -> server.setStopTimeout(5_000)); // wait 5 seconds for existing requests to finish
-			cfg.requestLogger.http((ctx, executionTimeMs) -> {
-				new Thread(() -> {
-					try {
-						if (dev) {
-							String name = Base64Utils.deserializeFromBase64(ctx.body()).getClass().getName();
-							log.info("{} -> {}", name, executionTimeMs);
-							ef.runInTransaction(em -> {
-								PerformanceTrace pt = em.find(PerformanceTrace.class, name);
-								if (pt == null) {
-									pt = new PerformanceTrace();
-									pt.setRequestClassName(name);
-									pt.setRequestDuration(new TreeSet<>());
-									em.persist(pt);
-								}
+			cfg.requestLogger.http((ctx, executionTimeMs) -> new Thread(() -> {
+				try {
+					if (dev) {
+						String name = Base64Utils.deserializeFromBase64(ctx.body()).getClass().getName();
+						log.info("{} -> {}", name, executionTimeMs);
+						ef.runInTransaction(em -> {
+							PerformanceTrace pt = em.find(PerformanceTrace.class, name);
+							if (pt == null) {
+								pt = new PerformanceTrace();
+								pt.setRequestClassName(name);
+								pt.setRequestDuration(new TreeSet<>());
+								em.persist(pt);
+							}
 
-								pt.getRequestDuration().add(executionTimeMs);
-							});
-						}
-					} catch (Exception e) {
-						log.error("Performance trace error",e);
+							pt.getRequestDuration().add(executionTimeMs);
+						});
 					}
-				}).start();
-			});
+				} catch (Exception e) {
+					log.error("Performance trace error",e);
+				}
+			}).start());
 			cfg.router.caseInsensitiveRoutes = true;
 			cfg.router.treatMultipleSlashesAsSingleSlash = true;
 			cfg.router.ignoreTrailingSlashes = true;
-			cfg.router.apiBuilder(()-> {
-				post("/", tch::handle);
-			});
+			cfg.router.apiBuilder(()-> post("/", tch::handle));
 		});
 	}
 

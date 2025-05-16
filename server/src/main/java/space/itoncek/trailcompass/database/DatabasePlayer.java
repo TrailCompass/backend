@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import space.itoncek.trailcompass.commons.objects.Player;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Entity
@@ -17,6 +19,8 @@ public class DatabasePlayer {
 	String nickname;
 	byte[] passwordHash;
 	boolean admin;
+	@OneToMany(targetEntity = LocationEntry.class, mappedBy = "player")
+	List<LocationEntry> tracList;
 
 	public Player serialize() {
 		return new Player(id, nickname, passwordHash,admin);
