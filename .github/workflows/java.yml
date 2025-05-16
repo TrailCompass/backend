@@ -2,9 +2,9 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ "new" ]
+    branches: [ "migrate-to-hibernate" ]
   pull_request:
-    branches: [ "new" ]
+    branches: [ "migrate-to-hibernate" ]
 
 jobs:
   build:
