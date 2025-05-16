@@ -1,39 +1,37 @@
 services:
   db:
-    image: mariadb:lts
+    image: postgres:17-alpine
     ports:
-      - "3333:3306"
+      - "5555:5432"
     environment:
-      MARIADB_USER: trailcompass
-      MARIADB_PASSWORD: trailcompass
-      MARIADB_DATABASE: tc_system
-      MARIADB_RANDOM_ROOT_PASSWORD: true
+      POSTGRES_USER: trailcompass
+      POSTGRES_PASSWORD: trailcompass
+      POSTGRES_DB: tc_system
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - "mariadb-volume:/var/lib/mysql:Z"
+      - "pgdata:/var/lib/postgresql/data/pgdata:Z"
     healthcheck:
-      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
-      start_period: 10s
-      interval: 10s
-      timeout: 5s
-      retries: 3
+      test: ["CMD-SHELL", "pg_isready", "-d", "tc_system"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
     restart: always
     networks:
       - internal-network
   server:
-    image: ghcr.io/trailcompass/backend:latest
+    build: .
     environment:
       - DEV=false
-      - MARIA=db:3306
-      - MARIA_DB=tc_system
-      - MARIA_USER=trailcompass
-      - MARIA_PASSWORD=trailcompass
+      - CONNECTION_STRING=jdbc:postgresql://db:5432/tc_system
+      - CONNECTION_USER=trailcompass
+      - CONNECTION_PASSWORD=trailcompass
       - PORT=8080
     depends_on:
       db:
         condition: service_healthy
         restart: true
     volumes:
-      - "./packages:/usr/app/packages"
       - "./data:/usr/app/data"
     ports:
       - "8080:8080"
@@ -47,6 +45,6 @@ services:
       retries: 3
 
 volumes:
-  mariadb-volume:
+  pgdata:
 networks:
   internal-network:

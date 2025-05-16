@@ -20,6 +20,9 @@ public class TrailServer {
 	private static final Logger log = LoggerFactory.getLogger(TrailServer.class);
 	public final boolean dev = System.getenv("dev") != null && Boolean.parseBoolean(System.getenv("dev"));
 	private final int PORT = System.getenv("PORT") == null ? 8080 : Integer.parseInt(System.getenv("PORT"));
+	private final String CONNECTION_STRING = System.getenv("CONNECTION_STRING") == null ? "jdbc:postgresql://localhost:5002/TrailCompass" : System.getenv("CONNECTION_STRING");
+	private final String CONNECTION_USER = System.getenv("CONNECTION_USER") == null ? "postgres" : System.getenv("CONNECTION_USER");
+	private final String CONNECTION_PASSWORD = System.getenv("CONNECTION_PASSWORD") == null ? "postgres" : System.getenv("CONNECTION_PASSWORD");
 	public final SessionFactory ef;
 	private final Javalin app;
 	private final TrailCompassHandler tch;
@@ -31,10 +34,10 @@ public class TrailServer {
 				.managedClass(DatabasePlayer.class)
 				.managedClass(LocationEntry.class)
 				// PostgreSQL
-				.jdbcUrl("jdbc:postgresql://localhost:5002/TrailCompass")
+				.jdbcUrl(CONNECTION_STRING)
 				// Credentials
-				.jdbcUsername("postgres")
-				.jdbcPassword("postgres")
+				.jdbcUsername(CONNECTION_USER)
+				.jdbcPassword(CONNECTION_PASSWORD)
 				// Automatic schema export
 				.schemaToolingAction(Action.UPDATE)
 				// SQL statement logging
@@ -70,13 +73,13 @@ public class TrailServer {
 						});
 					}
 				} catch (Exception e) {
-					log.error("Performance trace error",e);
+					log.error("Performance trace error", e);
 				}
 			}).start());
 			cfg.router.caseInsensitiveRoutes = true;
 			cfg.router.treatMultipleSlashesAsSingleSlash = true;
 			cfg.router.ignoreTrailingSlashes = true;
-			cfg.router.apiBuilder(()-> post("/", tch::handle));
+			cfg.router.apiBuilder(() -> post("/", tch::handle));
 		});
 	}
 
