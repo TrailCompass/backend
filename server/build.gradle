@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'space.itoncek.trailcompass'
-version = parent.version
+version = "v0.0.0.7"
 
 String javalinVersion = "6.6.0"
 
