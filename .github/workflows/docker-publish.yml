@@ -7,11 +7,11 @@ name: Docker
 
 on:
   push:
-    branches: [ "new" ]
+    branches: [ "migrate-to-hibernate" ]
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
   pull_request:
-    branches: [ "new" ]
+    branches: [ "migrate-to-hibernate" ]
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -32,8 +32,11 @@ jobs:
       id-token: write
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.REPO_PAT }}
 
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer

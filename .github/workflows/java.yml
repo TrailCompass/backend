@@ -2,9 +2,9 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ "new" ]
+    branches: [ "migrate-to-hibernate" ]
   pull_request:
-    branches: [ "new" ]
+    branches: [ "migrate-to-hibernate" ]
 
 jobs:
   build:
@@ -13,11 +13,16 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.REPO_PAT }}
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
           cache: 'gradle'
 
