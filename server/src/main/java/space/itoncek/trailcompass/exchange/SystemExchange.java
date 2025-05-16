@@ -1,5 +1,6 @@
 package space.itoncek.trailcompass.exchange;
 
+import space.itoncek.trailcompass.TrailServer;
 import space.itoncek.trailcompass.commons.exchange.ISystemExchange;
 import space.itoncek.trailcompass.commons.requests.system.ServerTimeRequest;
 import space.itoncek.trailcompass.commons.requests.system.ServerVersionRequest;
@@ -7,13 +8,19 @@ import space.itoncek.trailcompass.commons.responses.system.ServerTimeResponse;
 import space.itoncek.trailcompass.commons.responses.system.ServerVersionResponse;
 
 public class SystemExchange implements ISystemExchange {
+	private final TrailServer server;
+
+	public SystemExchange(TrailServer server) {
+		this.server = server;
+	}
+
 	@Override
 	public ServerTimeResponse time(ServerTimeRequest request) {
-		return null;
+		return new ServerTimeResponse(request.start(), System.currentTimeMillis());
 	}
 
 	@Override
 	public ServerVersionResponse version(ServerVersionRequest request) {
-		return null;
+		return new ServerVersionResponse(getClass().getPackage().getImplementationVersion() == null? "vDEVELOPMENT":getClass().getPackage().getImplementationVersion());
 	}
 }
