@@ -20,10 +20,7 @@ public interface Card {
 	 */
 	String getDescription();
 
-	/**
-	 * @return true if this card can be used
-	 */
-	boolean canUse();
+	void useNow();
 
-	int amountInDeck();
+	void useAtGameEnd();
 }

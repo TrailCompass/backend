@@ -1,4 +1,6 @@
 package space.itoncek.trailcompass.objects;
 
-public record UserMeta(int id, long validUntil) {
+import java.util.UUID;
+
+public record UserMeta(UUID id, long validUntil) {
 }

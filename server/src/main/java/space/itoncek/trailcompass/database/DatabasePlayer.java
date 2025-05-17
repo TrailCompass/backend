@@ -6,6 +6,7 @@ import lombok.Setter;
 import space.itoncek.trailcompass.commons.objects.Player;
 
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -14,13 +15,15 @@ import java.util.List;
 @NamedQuery(name = "findPlayerByNickname", query = "SELECT e FROM DatabasePlayer e WHERE e.nickname = :nickmane")
 public class DatabasePlayer {
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	int id;
+	@GeneratedValue(strategy = GenerationType.UUID)
+	UUID id;
 	String nickname;
 	byte[] passwordHash;
 	boolean admin;
 	@OneToMany(targetEntity = LocationEntry.class, mappedBy = "player")
 	List<LocationEntry> tracList;
+	@OneToMany(targetEntity = DatabaseCard.class, mappedBy = "owner")
+	List<DatabaseCard> cards;
 
 	public Player serialize() {
 		return new Player(id, nickname, passwordHash,admin);

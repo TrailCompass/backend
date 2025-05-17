@@ -8,9 +8,11 @@ import org.hibernate.tool.schema.Action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.commons.utils.Base64Utils;
+import space.itoncek.trailcompass.database.DatabaseCard;
+import space.itoncek.trailcompass.database.DatabasePlayer;
 import space.itoncek.trailcompass.database.LocationEntry;
 import space.itoncek.trailcompass.database.PerformanceTrace;
-import space.itoncek.trailcompass.database.DatabasePlayer;
+import space.itoncek.trailcompass.modules.DeckManager;
 import space.itoncek.trailcompass.modules.LocationManager;
 
 import java.io.IOException;
@@ -25,14 +27,17 @@ public class TrailServer {
 	private final String CONNECTION_PASSWORD = System.getenv("CONNECTION_PASSWORD") == null ? "postgres" : System.getenv("CONNECTION_PASSWORD");
 	public final SessionFactory ef;
 	private final Javalin app;
-	private final TrailCompassHandler tch;
+	public final TrailCompassHandler tch;
 	public final LocationManager lm;
+	public final DeckManager dm;
 
 	public TrailServer() {
 		ef = new HibernatePersistenceConfiguration("TrailCompass")
 				.managedClass(PerformanceTrace.class)
 				.managedClass(DatabasePlayer.class)
 				.managedClass(LocationEntry.class)
+				.managedClass(DatabaseCard.class)
+				.jdbcPoolSize(64)
 				// PostgreSQL
 				.jdbcUrl(CONNECTION_STRING)
 				// Credentials
@@ -47,6 +52,7 @@ public class TrailServer {
 
 		tch = new TrailCompassHandler(this);
 		lm = new LocationManager(this);
+		dm = new DeckManager(this);
 
 		app = Javalin.create(cfg -> {
 			cfg.useVirtualThreads = true;
@@ -85,7 +91,6 @@ public class TrailServer {
 
 	public static void main(String[] args) {
 		TrailServer ts = new TrailServer();
-
 		ts.start();
 
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -97,7 +102,8 @@ public class TrailServer {
 		}));
 	}
 
-	private void start() {
+	public void start() {
+		dm.resetDeck();
 		app.start(PORT);
 	}
 

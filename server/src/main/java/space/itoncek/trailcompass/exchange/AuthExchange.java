@@ -22,6 +22,7 @@ import space.itoncek.trailcompass.objects.UserMeta;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class AuthExchange implements IAuthExchange {
@@ -38,7 +39,7 @@ public class AuthExchange implements IAuthExchange {
 
 		generator = (user, alg) -> {
 			JWTCreator.Builder token = JWT.create()
-					.withClaim("id", user.id())
+					.withClaim("id", user.id().toString())
 					.withClaim("validuntil", user.validUntil());
 			return token.sign(alg);
 		};
@@ -81,7 +82,7 @@ public class AuthExchange implements IAuthExchange {
 		if (jwt == null) {
 			return null;
 		}
-		int requesterId = jwt.getClaim("id").asInt();
+		UUID requesterId = UUID.fromString(jwt.getClaim("id").asString());
 		AtomicReference<DatabasePlayer> dbp = new AtomicReference<>(null);
 
 		server.ef.runInTransaction(em -> {
@@ -109,7 +110,7 @@ public class AuthExchange implements IAuthExchange {
 		if (jwt == null) {
 			return null;
 		}
-		int requesterId = jwt.getClaim("id").asInt();
+		UUID requesterId = UUID.fromString(jwt.getClaim("id").asString());
 		AtomicReference<DatabasePlayer> dbp = new AtomicReference<>(null);
 
 		server.ef.runInTransaction(em -> {
