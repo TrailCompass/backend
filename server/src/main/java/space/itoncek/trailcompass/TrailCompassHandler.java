@@ -20,7 +20,7 @@ import java.io.Serializable;
 @Slf4j
 public class TrailCompassHandler {
 	private final TrailServer server;
-	private final Exchange ex;
+	public final Exchange ex;
 
 	public TrailCompassHandler(TrailServer server) {
 		this.server = server;

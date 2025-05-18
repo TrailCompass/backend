@@ -2,17 +2,19 @@ package space.itoncek.trailcompass;
 
 import io.javalin.Javalin;
 import static io.javalin.apibuilder.ApiBuilder.post;
+import static org.apache.commons.codec.digest.DigestUtils.sha512;
 import org.hibernate.SessionFactory;
 import org.hibernate.jpa.HibernatePersistenceConfiguration;
 import org.hibernate.tool.schema.Action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.commons.utils.Base64Utils;
-import space.itoncek.trailcompass.database.DatabaseCard;
-import space.itoncek.trailcompass.database.DatabasePlayer;
-import space.itoncek.trailcompass.database.LocationEntry;
-import space.itoncek.trailcompass.database.PerformanceTrace;
+import space.itoncek.trailcompass.database.*;
+import static space.itoncek.trailcompass.gamedata.utils.Randoms.generateRandomString;
+import static space.itoncek.trailcompass.gamedata.utils.Randoms.pickRandomStrings;
+import space.itoncek.trailcompass.gamedata.utils.TextGraphics;
 import space.itoncek.trailcompass.modules.DeckManager;
+import space.itoncek.trailcompass.modules.GameManager;
 import space.itoncek.trailcompass.modules.LocationManager;
 
 import java.io.IOException;
@@ -30,14 +32,18 @@ public class TrailServer {
 	public final TrailCompassHandler tch;
 	public final LocationManager lm;
 	public final DeckManager dm;
+	public final GameManager gm;
 
 	public TrailServer() {
 		ef = new HibernatePersistenceConfiguration("TrailCompass")
-				.managedClass(PerformanceTrace.class)
-				.managedClass(DatabasePlayer.class)
-				.managedClass(LocationEntry.class)
-				.managedClass(DatabaseCard.class)
-				.jdbcPoolSize(64)
+				.managedClasses(
+						PerformanceTrace.class,
+						DatabasePlayer.class,
+						LocationEntry.class,
+						DatabaseCard.class,
+						KeyStore.class
+				)
+				.jdbcPoolSize(8)
 				// PostgreSQL
 				.jdbcUrl(CONNECTION_STRING)
 				// Credentials
@@ -46,13 +52,14 @@ public class TrailServer {
 				// Automatic schema export
 				.schemaToolingAction(Action.UPDATE)
 				// SQL statement logging
-				.showSql(true, false, true)
+				.showSql(false, true, true)
 				// Create a new EntityManagerFactory
 				.createEntityManagerFactory();
 
 		tch = new TrailCompassHandler(this);
 		lm = new LocationManager(this);
 		dm = new DeckManager(this);
+		gm = new GameManager(this);
 
 		app = Javalin.create(cfg -> {
 			cfg.useVirtualThreads = true;
@@ -103,8 +110,42 @@ public class TrailServer {
 	}
 
 	public void start() {
-		dm.resetDeck();
+		for (KeyStore.KeystoreKeys v : KeyStore.KeystoreKeys.values()) {
+			ef.runInTransaction(em -> {
+				KeyStore ks = em.find(KeyStore.class, v);
+				if (ks == null) {
+					ks = new KeyStore();
+					ks.setKkey(v);
+					ks.setKvalue(v.defaults);
+					em.persist(ks);
+				}
+			});
+		}
+
+		final boolean[] needsCardReset = {false};
+		ef.runInTransaction(em-> {
+			KeyStore ks = em.find(KeyStore.class, KeyStore.KeystoreKeys.DECK_DEALT);
+			if (!Boolean.parseBoolean(ks.getKvalue())) {
+				needsCardReset[0] = true;
+			}
+		});
+
+		if(needsCardReset[0]) {
+			dm.resetDeck();
+			ef.runInTransaction(em -> {
+				KeyStore ks = em.find(KeyStore.class, KeyStore.KeystoreKeys.DECK_DEALT);
+				ks.setKvalue("true");
+			});
+		}
+
 		app.start(PORT);
+
+		if (tch.ex.auth().needsDefaultUser()) {
+			String user = pickRandomStrings();
+			String password = generateRandomString(16, true, false);
+			tch.ex.auth().createUser(user, sha512(password), true);
+			log.info(TextGraphics.generateLoginBox(user, password));
+		}
 	}
 
 	private void stop() throws IOException {

@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class AuthExchange implements IAuthExchange {
@@ -162,8 +163,27 @@ public class AuthExchange implements IAuthExchange {
 		);
 	}
 
-	private DecodedJWT getJWTToken(Authorized obj) {
+	public DecodedJWT getJWTToken(Authorized obj) {
 		Optional<DecodedJWT> decodedJWT = provider.validateToken(obj.token().token());
 		return decodedJWT.orElse(null);
+	}
+
+	public boolean needsDefaultUser() {
+		AtomicBoolean result = new AtomicBoolean(false);
+		server.ef.runInTransaction(em -> {
+			List<DatabasePlayer> players = em.createNamedQuery("findAllPlayers", DatabasePlayer.class).getResultList();
+			result.set(players.isEmpty());
+		});
+		return result.get();
+	}
+
+	public void createUser(String nickname, byte[] passwordHash, boolean isAdmin) {
+		server.ef.runInTransaction(em-> {
+			DatabasePlayer pl = new DatabasePlayer();
+			pl.setNickname(nickname);
+			pl.setPasswordHash(passwordHash);
+			pl.setAdmin(isAdmin);
+			em.persist(pl);
+		});
 	}
 }

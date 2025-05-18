@@ -1,5 +1,6 @@
 package space.itoncek.trailcompass.exchange;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.geodesk.feature.FeatureLibrary;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
@@ -47,6 +48,11 @@ public class MapExchange implements IMapExchange {
 
 	@Override
 	public MapHashResponse getMapHash(MapHashRequest request) throws BackendException {
+		DecodedJWT jwt = server.tch.ex.auth().getJWTToken(request);
+		if (jwt == null) {
+			return null;
+		}
+
 		try {
 			if (sha256 == null || ZonedDateTime.now().isAfter(timeout)) {
 				sha256 = DigestUtils.sha256Hex(new FileInputStream("./data/" + config.getString("android-map")));
@@ -60,6 +66,11 @@ public class MapExchange implements IMapExchange {
 
 	@Override
 	public MapResponse getMap(MapRequest request) throws BackendException {
+		DecodedJWT jwt = server.tch.ex.auth().getJWTToken(request);
+		if (jwt == null) {
+			return null;
+		}
+
 		try (FileInputStream fis = new FileInputStream("./data/" + config.getString("android-map"))){
 			byte[] bytes = IOUtils.toByteArray(fis);
 			return new MapResponse(bytes);
