@@ -2,6 +2,7 @@ package space.itoncek.trailcompass;
 
 import io.javalin.Javalin;
 import static io.javalin.apibuilder.ApiBuilder.post;
+import static io.javalin.apibuilder.ApiBuilder.ws;
 import static org.apache.commons.codec.digest.DigestUtils.sha512;
 import org.hibernate.SessionFactory;
 import org.hibernate.jpa.HibernatePersistenceConfiguration;
@@ -10,8 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.commons.utils.Base64Utils;
 import space.itoncek.trailcompass.database.*;
-import static space.itoncek.trailcompass.gamedata.utils.Randoms.generateRandomString;
-import static space.itoncek.trailcompass.gamedata.utils.Randoms.pickRandomStrings;
 import space.itoncek.trailcompass.gamedata.utils.TextGraphics;
 import space.itoncek.trailcompass.modules.DeckManager;
 import space.itoncek.trailcompass.modules.GameManager;
@@ -92,7 +91,10 @@ public class TrailServer {
 			cfg.router.caseInsensitiveRoutes = true;
 			cfg.router.treatMultipleSlashesAsSingleSlash = true;
 			cfg.router.ignoreTrailingSlashes = true;
-			cfg.router.apiBuilder(() -> post("/", tch::handle));
+			cfg.router.apiBuilder(() -> {
+				post("/", tch::handle);
+				ws("/gamemanager/await", gm::awaitWS);
+			});
 		});
 	}
 
@@ -141,8 +143,11 @@ public class TrailServer {
 		app.start(PORT);
 
 		if (tch.ex.auth().needsDefaultUser()) {
-			String user = pickRandomStrings();
-			String password = generateRandomString(16, true, false);
+			// TODO)) REMOVE BEFORE RELEASE! DEBUG ONLY!
+//			String user = pickRandomStrings();
+			String user = "itoncek";
+//			String password = generateRandomString(16, true, false);
+			String password = "root";
 			tch.ex.auth().createUser(user, sha512(password), true);
 			log.info(TextGraphics.generateLoginBox(user, password));
 		}
