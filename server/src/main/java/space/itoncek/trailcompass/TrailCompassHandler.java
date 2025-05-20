@@ -8,6 +8,9 @@ import space.itoncek.trailcompass.commons.requests.auth.LoginRequest;
 import space.itoncek.trailcompass.commons.requests.auth.ProfileOtherRequest;
 import space.itoncek.trailcompass.commons.requests.auth.ProfileRequest;
 import space.itoncek.trailcompass.commons.requests.auth.RegisterRequest;
+import space.itoncek.trailcompass.commons.requests.gamemgr.*;
+import space.itoncek.trailcompass.commons.requests.map.MapHashRequest;
+import space.itoncek.trailcompass.commons.requests.map.MapRequest;
 import space.itoncek.trailcompass.commons.requests.system.ServerTimeRequest;
 import space.itoncek.trailcompass.commons.requests.system.ServerVersionRequest;
 import space.itoncek.trailcompass.commons.responses.generic.ErrorResponse;
@@ -30,7 +33,6 @@ public class TrailCompassHandler {
 	public void handle(@NotNull Context ctx) throws IOException, ClassNotFoundException {
 		Serializable req = Base64Utils.deserializeFromBase64(ctx.body());
 		Serializable res = respond(req);
-		if(res == null) res = new ErrorResponse("Serverside error, please check server console!");
 		String resString = Base64Utils.serializeToBase64(res);
 
 		ctx.status(HttpStatus.OK).contentType("java/binary").result(resString);
@@ -47,12 +49,21 @@ public class TrailCompassHandler {
 				case RegisterRequest req -> ex.auth().register(req);
 				case ProfileRequest req -> ex.auth().getProfile(req);
 				case ProfileOtherRequest req -> ex.auth().getOtherProfile(req);
+				/* Map */
+				case MapHashRequest req -> ex.map().getMapHash(req);
+				case MapRequest req -> ex.map().getMap(req);
+				/* GameManager */
+				case GameStateRequest req -> ex.gameMgr().getGameState(req);
+				case CurrentHiderRequest req -> ex.gameMgr().getCurrentHider(req);
+				case ChangeCurrentHiderRequest req -> ex.gameMgr().changeCurrentHider(req);
+				case StartingTimeRequest req -> ex.gameMgr().getStartingTime(req);
+				case FinishSetupRequest req -> ex.gameMgr().finishSetup(req);
 				/* default */
 				case null, default -> new ErrorResponse("There is no handler for that request!");
 			};
 		} catch (Exception e) {
-			log.error("Server handler error",e);
-			return null;
+			log.error("Server handler error", e);
+			return new ErrorResponse("Serverside error, please check server console!\n" + e);
 		}
 	}
 }

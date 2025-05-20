@@ -19,7 +19,6 @@ import static space.itoncek.trailcompass.commons.utils.RandomUtils.generateRando
 import space.itoncek.trailcompass.database.DatabasePlayer;
 import space.itoncek.trailcompass.objects.UserMeta;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -68,7 +67,7 @@ public class AuthExchange implements IAuthExchange {
 			return null;
 		}
 
-		boolean passwordCorrect = Arrays.equals(passwordHash, player.get().getPasswordHash());
+		boolean passwordCorrect = new String(passwordHash).equals(new String(player.get().getPasswordHash()));
 
 		if (!passwordCorrect) {
 			return null;

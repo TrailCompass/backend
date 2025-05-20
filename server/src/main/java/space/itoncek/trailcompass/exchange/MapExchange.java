@@ -2,6 +2,7 @@ package space.itoncek.trailcompass.exchange;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.geodesk.feature.FeatureLibrary;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
@@ -20,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.time.ZonedDateTime;
 
+@Slf4j
 public class MapExchange implements IMapExchange {
 	private final TrailServer server;
 	private final JSONObject config;
@@ -60,6 +62,7 @@ public class MapExchange implements IMapExchange {
 			}
 			return new MapHashResponse(sha256);
 		} catch (Exception e) {
+			log.error("Map hash error",e);
 			throw new BackendException(e);
 		}
 	}

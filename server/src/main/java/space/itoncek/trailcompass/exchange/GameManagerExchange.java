@@ -1,8 +1,6 @@
 package space.itoncek.trailcompass.exchange;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import io.javalin.websocket.WsConfig;
-import io.javalin.websocket.WsContext;
 import space.itoncek.trailcompass.TrailServer;
 import space.itoncek.trailcompass.commons.exchange.IGameManagerExchange;
 import space.itoncek.trailcompass.commons.requests.gamemgr.*;
@@ -13,9 +11,6 @@ import space.itoncek.trailcompass.commons.responses.generic.OkResponse;
 import space.itoncek.trailcompass.commons.utils.BackendException;
 import space.itoncek.trailcompass.database.DatabasePlayer;
 
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
