@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.commons.utils.Base64Utils;
 import space.itoncek.trailcompass.database.*;
 import space.itoncek.trailcompass.gamedata.utils.TextGraphics;
+import space.itoncek.trailcompass.modules.ConfigManager;
 import space.itoncek.trailcompass.modules.DeckManager;
 import space.itoncek.trailcompass.modules.GameManager;
 import space.itoncek.trailcompass.modules.LocationManager;
@@ -32,6 +33,7 @@ public class TrailServer {
 	public final LocationManager lm;
 	public final DeckManager dm;
 	public final GameManager gm;
+	public final ConfigManager config;
 
 	public TrailServer() {
 		ef = new HibernatePersistenceConfiguration("TrailCompass")
@@ -55,6 +57,8 @@ public class TrailServer {
 				// Create a new EntityManagerFactory
 				.createEntityManagerFactory();
 
+		config = new ConfigManager(this);
+
 		tch = new TrailCompassHandler(this);
 		lm = new LocationManager(this);
 		dm = new DeckManager(this);
@@ -66,6 +70,7 @@ public class TrailServer {
 			cfg.http.generateEtags = true;
 			cfg.jetty.timeoutStatus = 408;
 			cfg.jetty.clientAbortStatus = 499;
+			cfg.showJavalinBanner = false;
 			cfg.jetty.modifyServer(server -> server.setStopTimeout(5_000)); // wait 5 seconds for existing requests to finish
 			cfg.requestLogger.http((ctx, executionTimeMs) -> new Thread(() -> {
 				try {
@@ -141,6 +146,7 @@ public class TrailServer {
 		}
 
 		app.start(PORT);
+		log.info("{}\n{}", TextGraphics.generateIntroMural(), TextGraphics.isDebuggerPresent() ? TextGraphics.generateDevWarningBox() : "");
 
 		if (tch.ex.auth().needsDefaultUser()) {
 			// TODO)) REMOVE BEFORE RELEASE! DEBUG ONLY!
