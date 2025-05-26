@@ -75,7 +75,7 @@ public class TrailServer {
 			cfg.requestLogger.http((ctx, executionTimeMs) -> new Thread(() -> {
 				try {
 					if (dev) {
-						String name = Base64Utils.deserializeFromBase64(ctx.body()).getClass().getName();
+						String name = Base64Utils.deserializeFromBase64(ctx.body()).getClass().getSimpleName();
 						log.info("{} -> {}", name, executionTimeMs);
 						ef.runInTransaction(em -> {
 							PerformanceTrace pt = em.find(PerformanceTrace.class, name);
