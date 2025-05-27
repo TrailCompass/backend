@@ -1,12 +1,12 @@
 package space.itoncek.trailcompass;
 
-import space.itoncek.trailcompass.server.BuildMetadata;
+import space.itoncek.trailcompass.server.BuildMeta;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SystemUtils {
-	public static final String stringVersion = BuildMetadata.APP_VERSION;
+	public static final String stringVersion = BuildMeta.APP_VERSION;
 	public static final double doubleVersion = stringVersionDouble();
 
 	private static double stringVersionDouble() {

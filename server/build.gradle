@@ -58,7 +58,7 @@ jar {
 }
 
 buildConfig {
-    className("BuildMetadata")
+    className("BuildMeta")
     useJavaOutput()
     buildConfigField(String, "APP_VERSION", project.version)
     buildConfigField(long, 'BUILD_TIME', System.currentTimeMillis())

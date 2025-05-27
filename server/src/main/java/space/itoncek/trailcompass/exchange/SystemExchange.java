@@ -6,7 +6,7 @@ import space.itoncek.trailcompass.commons.requests.system.ServerTimeRequest;
 import space.itoncek.trailcompass.commons.requests.system.ServerVersionRequest;
 import space.itoncek.trailcompass.commons.responses.system.ServerTimeResponse;
 import space.itoncek.trailcompass.commons.responses.system.ServerVersionResponse;
-import space.itoncek.trailcompass.server.BuildMetadata;
+import space.itoncek.trailcompass.server.BuildMeta;
 
 public class SystemExchange implements ISystemExchange {
 	private final TrailServer server;
@@ -22,6 +22,6 @@ public class SystemExchange implements ISystemExchange {
 
 	@Override
 	public ServerVersionResponse version(ServerVersionRequest request) {
-		return new ServerVersionResponse(BuildMetadata.APP_VERSION, BuildMetadata.BUILD_TIME);
+		return new ServerVersionResponse(BuildMeta.APP_VERSION, BuildMeta.BUILD_TIME);
 	}
 }

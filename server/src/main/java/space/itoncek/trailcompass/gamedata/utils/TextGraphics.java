@@ -1,6 +1,6 @@
 package space.itoncek.trailcompass.gamedata.utils;
 
-import space.itoncek.trailcompass.server.BuildMetadata;
+import space.itoncek.trailcompass.server.BuildMeta;
 
 import java.lang.management.RuntimeMXBean;
 import java.time.Instant;
@@ -46,7 +46,7 @@ public class TextGraphics {
 			   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝
 			                         Version: %s, built at: %s                                            \s
 		\t
-		\t""".formatted(BuildMetadata.APP_VERSION, ZonedDateTime.ofInstant(Instant.ofEpochMilli(BuildMetadata.BUILD_TIME), ZoneId.of("Z")).withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime().format(DateTimeFormatter.ISO_DATE_TIME));
+		\t""".formatted(BuildMeta.APP_VERSION, ZonedDateTime.ofInstant(Instant.ofEpochMilli(BuildMeta.BUILD_TIME), ZoneId.of("Z")).withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime().format(DateTimeFormatter.ISO_DATE_TIME));
 	}
 
 	public static String generateDevWarningBox() {
