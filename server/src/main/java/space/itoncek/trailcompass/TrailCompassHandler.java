@@ -55,9 +55,7 @@ public class TrailCompassHandler {
 				/* GameManager */
 				case GameStateRequest req -> ex.gameMgr().getGameState(req);
 				case CurrentHiderRequest req -> ex.gameMgr().getCurrentHider(req);
-				case ChangeCurrentHiderRequest req -> ex.gameMgr().changeCurrentHider(req);
 				case StartingTimeRequest req -> ex.gameMgr().getStartingTime(req);
-				case FinishSetupRequest req -> ex.gameMgr().finishSetup(req);
 				/* default */
 				case null, default -> new ErrorResponse("There is no handler for that request!");
 			};

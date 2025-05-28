@@ -34,10 +34,8 @@ public class KeyStore {
 	}
 
 	public enum KeystoreKeys {
-		GAME_STATE(GameState.SETUP.name()),
-		DECK_DEALT("false"),
-		HIDER(""),
-		START_TIME(ZonedDateTime.now().plusMinutes(10).format(DateTimeFormatter.ISO_ZONED_DATE_TIME));
+		GAME_STATE(GameState.SETUP.name()),//todo)) remove dependence on the database for storing game state
+		DECK_DEALT("false");
 
 		public final String defaults;
 

@@ -1,6 +1,8 @@
 package space.itoncek.trailcompass.modules.config;
 
 import com.google.gson.annotations.Since;
+import lombok.Getter;
+import lombok.Setter;
 import space.itoncek.trailcompass.TrailServer;
 import space.itoncek.trailcompass.database.DatabasePlayer;
 
@@ -11,6 +13,8 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
+@Getter
+@Setter
 public class Config implements Serializable {
 	@Since(0.008)
 	ZonedDateTime startTime;
