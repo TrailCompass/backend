@@ -1,9 +1,6 @@
 package space.itoncek.trailcompass;
 
 import io.javalin.Javalin;
-import static io.javalin.apibuilder.ApiBuilder.post;
-import static io.javalin.apibuilder.ApiBuilder.ws;
-import static org.apache.commons.codec.digest.DigestUtils.sha512;
 import org.hibernate.SessionFactory;
 import org.hibernate.jpa.HibernatePersistenceConfiguration;
 import org.hibernate.tool.schema.Action;
@@ -20,14 +17,16 @@ import space.itoncek.trailcompass.modules.LocationManager;
 import java.io.IOException;
 import java.util.TreeSet;
 
+import static io.javalin.apibuilder.ApiBuilder.post;
+import static org.apache.commons.codec.digest.DigestUtils.sha512;
+import static space.itoncek.trailcompass.commons.utils.RandomUtils.generateRandomString;
+import static space.itoncek.trailcompass.commons.utils.RandomUtils.pickRandomStrings;
+
 public class TrailServer {
 	private static final Logger log = LoggerFactory.getLogger(TrailServer.class);
 	public final boolean dev = System.getenv("dev") != null && Boolean.parseBoolean(System.getenv("dev"));
 	private final int PORT = System.getenv("PORT") == null ? 8080 : Integer.parseInt(System.getenv("PORT"));
-	private final String CONNECTION_STRING = System.getenv("CONNECTION_STRING") == null ? "jdbc:postgresql://localhost:5002/TrailCompass" : System.getenv("CONNECTION_STRING");
-	private final String CONNECTION_USER = System.getenv("CONNECTION_USER") == null ? "postgres" : System.getenv("CONNECTION_USER");
-	private final String CONNECTION_PASSWORD = System.getenv("CONNECTION_PASSWORD") == null ? "postgres" : System.getenv("CONNECTION_PASSWORD");
-	public final SessionFactory ef;
+    public final SessionFactory ef;
 	private final Javalin app;
 	public final TrailCompassHandler tch;
 	public final LocationManager lm;
@@ -36,6 +35,9 @@ public class TrailServer {
 	public final ConfigManager config;
 
 	public TrailServer() {
+        String connString = System.getenv("CONNECTION_STRING") == null ? "jdbc:postgresql://localhost:5002/TrailCompass" : System.getenv("CONNECTION_STRING");
+		String connUser = System.getenv("CONNECTION_USER") == null ? "postgres" : System.getenv("CONNECTION_USER");
+		String connPassword = System.getenv("CONNECTION_PASSWORD") == null ? "postgres" : System.getenv("CONNECTION_PASSWORD");
 		ef = new HibernatePersistenceConfiguration("TrailCompass")
 				.managedClasses(
 						PerformanceTrace.class,
@@ -46,10 +48,10 @@ public class TrailServer {
 				)
 				.jdbcPoolSize(8)
 				// PostgreSQL
-				.jdbcUrl(CONNECTION_STRING)
+				.jdbcUrl(connString)
 				// Credentials
-				.jdbcUsername(CONNECTION_USER)
-				.jdbcPassword(CONNECTION_PASSWORD)
+				.jdbcUsername(connUser)
+				.jdbcPassword(connPassword)
 				// Automatic schema export
 				.schemaToolingAction(Action.UPDATE)
 				// SQL statement logging
@@ -96,10 +98,7 @@ public class TrailServer {
 			cfg.router.caseInsensitiveRoutes = true;
 			cfg.router.treatMultipleSlashesAsSingleSlash = true;
 			cfg.router.ignoreTrailingSlashes = true;
-			cfg.router.apiBuilder(() -> {
-				post("/", tch::handle);
-				ws("/gamemanager/await", gm::awaitWS);
-			});
+			cfg.router.apiBuilder(() -> post("/", tch::handle));
 		});
 	}
 
@@ -130,14 +129,14 @@ public class TrailServer {
 		}
 
 		final boolean[] needsCardReset = {false};
-		ef.runInTransaction(em-> {
+		ef.runInTransaction(em -> {
 			KeyStore ks = em.find(KeyStore.class, KeyStore.KeystoreKeys.DECK_DEALT);
 			if (!Boolean.parseBoolean(ks.getKvalue())) {
 				needsCardReset[0] = true;
 			}
 		});
 
-		if(needsCardReset[0]) {
+		if (needsCardReset[0]) {
 			dm.resetDeck();
 			ef.runInTransaction(em -> {
 				KeyStore ks = em.find(KeyStore.class, KeyStore.KeystoreKeys.DECK_DEALT);
@@ -149,14 +148,18 @@ public class TrailServer {
 		log.info("{}\n{}", TextGraphics.generateIntroMural(), TextGraphics.isDebuggerPresent() ? TextGraphics.generateDevWarningBox() : "");
 
 		if (tch.ex.auth().needsDefaultUser()) {
-			// TODO)) REMOVE BEFORE RELEASE! DEBUG ONLY!
-//			String user = pickRandomStrings();
-			String user = "itoncek";
-//			String password = generateRandomString(16, true, false);
-			String password = "root";
-			tch.ex.auth().createUser(user, sha512(password), true);
-			log.info(TextGraphics.generateLoginBox(user, password));
-		}
+            String user;
+            String password;
+            if (dev) {
+                user = "admin";
+                password = "root";
+            }else {
+			user = pickRandomStrings();
+			password = generateRandomString(16, true, false);
+			}
+            tch.ex.auth().createUser(user, sha512(password), true);
+            log.info(TextGraphics.generateLoginBox(user, password));
+        }
 	}
 
 	private void stop() throws IOException {
