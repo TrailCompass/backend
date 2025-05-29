@@ -83,7 +83,7 @@ public class GameManagerExchange implements IGameManagerExchange {
 					.stream()
 					.filter(x -> {
 						try {
-							return !server.config.getConfig().getHider().equals(x.getId());
+							return !server.config.getConfig().getRules().getHider().equals(x.getId());
 						} catch (IOException e) {
 							return false;
 						}

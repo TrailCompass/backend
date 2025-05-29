@@ -13,7 +13,7 @@ repositories {
 }
 
 String lombokVersion = "1.18.38"
-String hibernateVersion = "7.0.0.CR1"
+String hibernateVersion = "7.0.0.Final"
 
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')

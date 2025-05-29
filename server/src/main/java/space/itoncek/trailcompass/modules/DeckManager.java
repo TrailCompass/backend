@@ -22,7 +22,7 @@ public class DeckManager {
 	}
 
 	private void initNewDeck() {
-		HomeGameDeck deck = new HomeGameDeck();
+		HomeGameDeck deck = new HomeGameDeck(server);
 		server.ef.runInTransaction(em -> {
 			deck.cards.stream().map(x -> {
 				DatabaseCard card = new DatabaseCard();

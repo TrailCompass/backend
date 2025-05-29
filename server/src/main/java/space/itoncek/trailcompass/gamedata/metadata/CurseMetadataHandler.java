@@ -1,10 +1,20 @@
 package space.itoncek.trailcompass.gamedata.metadata;
 
+import space.itoncek.trailcompass.TrailServer;
+import space.itoncek.trailcompass.modules.config.GameSize;
 import space.itoncek.trailcompass.objects.CardClass;
 import space.itoncek.trailcompass.objects.CardType;
 
+import java.io.IOException;
+
 public class CurseMetadataHandler {
-	public static CardMetadata parseMetadata(CardType type) {
+	private final TrailServer server;
+
+	public CurseMetadataHandler(TrailServer server) {
+		this.server = server;
+	}
+
+	private static CardMetadata parseMetadata(CardType type) {
 		// Regex to parse different values depending on game size
 		// /\[([^\]]+),([^\]]+),([^\]]+)\]/gm
 
@@ -58,7 +68,21 @@ public class CurseMetadataHandler {
 			case Curse_GamblersFeet ->
 					new CardMetadata(CardClass.Curse, "The Gambler's Feet", "For the next [20 minutes,40 minutes,60 minutes] minutes seekers must roll a die before they take any steps in any direction, they may take that many steps before rolling again", "Roll a die if its even number this curse has no effect");
 			case TimeBonusRed, TimeBonusOrange, TimeBonusYellow, TimeBonusGreen, TimeBonusBlue, Randomize, Veto,
-				 Duplicate, Move, Discard1, Discard2, Draw1Expand -> PowerupMetadataHandler.parseMetadata(type);
+				 Duplicate, Move, Discard1, Discard2, Draw1Expand -> null;
 		};
+	}
+
+	public CardMetadata parseMetadataContextDependant(CardType cardType) throws IOException {
+		GameSize size = server.config.getConfig().getRules().getSize();
+
+		if(cardType.cardClass != CardClass.Curse) {
+			throw new IllegalArgumentException("Card is not a curse!");
+		}
+
+		CardMetadata cardMetadata = parseMetadata(cardType);
+
+		//TODO)) change description based on game size
+
+		return cardMetadata;
 	}
 }
