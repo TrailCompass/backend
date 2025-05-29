@@ -34,7 +34,6 @@ public class KeyStore {
 	}
 
 	public enum KeystoreKeys {
-		GAME_STATE(GameState.SETUP.name()),//todo)) remove dependence on the database for storing game state
 		DECK_DEALT("false");
 
 		public final String defaults;

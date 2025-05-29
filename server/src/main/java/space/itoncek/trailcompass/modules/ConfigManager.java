@@ -23,33 +23,10 @@ public class ConfigManager {
 		this.server = server;
 		this.file = new File("./data/config.json");
 
-		try {
-			if (!file.exists()) {
-				Config cfg = Config.generateConfig(server);
-				try (FileWriter writer = new FileWriter(file)) {
-					Gson gson = new GsonBuilder()
-							.setPrettyPrinting()
-							.setVersion(SystemUtils.doubleVersion)
-							.registerTypeAdapter(ZonedDateTime.class, new TypeAdapter<ZonedDateTime>() {
-								@Override
-								public void write(JsonWriter out, ZonedDateTime value) throws IOException {
-									out.value(value.toString());
-								}
-
-								@Override
-								public ZonedDateTime read(JsonReader in) throws IOException {
-									return ZonedDateTime.parse(in.nextString());
-								}
-							})
-							.enableComplexMapKeySerialization()
-							.create();
-					gson.toJson(cfg, writer);
-				}
-			}
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+        if (!file.exists()) {
+            throw new RuntimeException("No config supplied, exiting!");
+        }
+    }
 
 	public Config getConfig() throws IOException {
 		try (FileReader fr = new FileReader(file)) {

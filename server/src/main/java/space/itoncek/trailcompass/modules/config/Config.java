@@ -1,6 +1,5 @@
 package space.itoncek.trailcompass.modules.config;
 
-import com.google.gson.annotations.Since;
 import lombok.Getter;
 import lombok.Setter;
 import space.itoncek.trailcompass.TrailServer;
@@ -16,10 +15,10 @@ import java.util.UUID;
 @Getter
 @Setter
 public class Config implements Serializable {
-	@Since(0.008)
 	ZonedDateTime startTime;
-	@Since(0.008)
+	ZonedDateTime gameDayEndTime;
 	UUID hider;
+	long movePeriodSeconds;
 
 	public static Config generateConfig(TrailServer server) {
 		Config cfg = new Config();

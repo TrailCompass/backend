@@ -33,8 +33,12 @@ public class GameManagerExchange implements IGameManagerExchange {
 			return null;
 		}
 
-		return new GameStateResponse(server.gm.getGameState());
-	}
+        try {
+            return new GameStateResponse(server.gm.getGameState());
+        } catch (IOException e) {
+            throw new BackendException(e);
+        }
+    }
 
 	@Override
 	public CurrentHiderResponse getCurrentHider(CurrentHiderRequest request) throws BackendException {
