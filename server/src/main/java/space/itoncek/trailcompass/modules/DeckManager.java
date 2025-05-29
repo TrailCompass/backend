@@ -1,7 +1,7 @@
 package space.itoncek.trailcompass.modules;
 
 import space.itoncek.trailcompass.TrailServer;
-import space.itoncek.trailcompass.database.DatabaseCard;
+import space.itoncek.trailcompass.database.cards.DeckCard;
 import space.itoncek.trailcompass.database.DatabasePlayer;
 import space.itoncek.trailcompass.gamedata.HomeGameDeck;
 
@@ -25,7 +25,7 @@ public class DeckManager {
 		HomeGameDeck deck = new HomeGameDeck(server);
 		server.ef.runInTransaction(em -> {
 			deck.cards.stream().map(x -> {
-				DatabaseCard card = new DatabaseCard();
+				DeckCard card = new DeckCard();
 				card.setType(x.getType());
 				card.setOwner(null);
 				return card;
@@ -35,7 +35,7 @@ public class DeckManager {
 
 	private void discardAllCards() {
 		server.ef.runInTransaction(em -> {
-			List<DatabaseCard> cards = em.createNamedQuery("getAllCards", DatabaseCard.class).getResultList();
+			List<DeckCard> cards = em.createNamedQuery("getAllCards", DeckCard.class).getResultList();
 			List<DatabasePlayer> players = em.createNamedQuery("findAllPlayers", DatabasePlayer.class).getResultList();
 
 			players.forEach(x -> x.getCards().clear());
@@ -47,13 +47,17 @@ public class DeckManager {
 		final UUID[] res = {null};
 		server.ef.runInTransaction(em-> {
 			DatabasePlayer player = em.find(DatabasePlayer.class, playerUUID);
-			List<DatabaseCard> cards = em.createNamedQuery("getAllCardsInDeck", DatabaseCard.class).getResultList();
+			List<DeckCard> cards = em.createNamedQuery("getAllCardsInDeck", DeckCard.class).getResultList();
 			int randomId = new Random().nextInt(cards.size());
 
-			DatabaseCard card = cards.get(randomId);
+			DeckCard card = cards.get(randomId);
 			card.setOwner(player);
 			res[0] = card.getId();
 		});
 		return res[0];
+	}
+
+	public void duplicateCard(UUID cardID) {
+
 	}
 }

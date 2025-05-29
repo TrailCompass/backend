@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import space.itoncek.trailcompass.commons.objects.Player;
+import space.itoncek.trailcompass.database.cards.DeckCard;
+import space.itoncek.trailcompass.database.cards.ShadowCard;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,8 +24,10 @@ public class DatabasePlayer {
 	boolean admin;
 	@OneToMany(targetEntity = LocationEntry.class, mappedBy = "player")
 	List<LocationEntry> tracList;
-	@OneToMany(targetEntity = DatabaseCard.class, mappedBy = "owner")
-	List<DatabaseCard> cards;
+	@OneToMany(targetEntity = DeckCard.class, mappedBy = "owner")
+	List<DeckCard> cards;
+	@OneToMany(targetEntity = DeckCard.class, mappedBy = "owner")
+	List<ShadowCard> shadowCards;
 
 	public Player serialize() {
 		return new Player(id, nickname, passwordHash,admin);

@@ -30,7 +30,22 @@ public class ConfigManager {
 
 	public Config getConfig() throws IOException {
 		try (FileReader fr = new FileReader(file)) {
-			Gson gson = new GsonBuilder().setPrettyPrinting().setVersion(SystemUtils.doubleVersion).create();
+			Gson gson = new GsonBuilder()
+				.setPrettyPrinting()
+				.registerTypeAdapter(ZonedDateTime.class, new TypeAdapter<ZonedDateTime>() {
+					@Override
+					public void write(JsonWriter out, ZonedDateTime value) throws IOException {
+						out.value(value.toString());
+					}
+
+					@Override
+					public ZonedDateTime read(JsonReader in) throws IOException {
+						return ZonedDateTime.parse(in.nextString());
+					}
+				})
+				.enableComplexMapKeySerialization()
+				.create();
+
 			return gson.fromJson(fr, Config.class);
 		}
 	}

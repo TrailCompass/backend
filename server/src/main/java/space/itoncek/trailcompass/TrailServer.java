@@ -8,6 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.commons.utils.Base64Utils;
 import space.itoncek.trailcompass.database.*;
+import space.itoncek.trailcompass.database.cards.Card;
+import space.itoncek.trailcompass.database.cards.DeckCard;
+import space.itoncek.trailcompass.database.cards.ShadowCard;
 import space.itoncek.trailcompass.gamedata.utils.TextGraphics;
 import space.itoncek.trailcompass.modules.ConfigManager;
 import space.itoncek.trailcompass.modules.DeckManager;
@@ -43,8 +46,10 @@ public class TrailServer {
 						PerformanceTrace.class,
 						DatabasePlayer.class,
 						LocationEntry.class,
-						DatabaseCard.class,
-						KeyStore.class
+						KeyStore.class,
+						Card.class,
+						DeckCard.class,
+						ShadowCard.class
 				)
 				.jdbcPoolSize(8)
 				// PostgreSQL

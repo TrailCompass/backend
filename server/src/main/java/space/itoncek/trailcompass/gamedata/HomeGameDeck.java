@@ -1,7 +1,7 @@
 package space.itoncek.trailcompass.gamedata;
 
 import space.itoncek.trailcompass.TrailServer;
-import space.itoncek.trailcompass.database.DatabaseCard;
+import space.itoncek.trailcompass.database.cards.DeckCard;
 import space.itoncek.trailcompass.objects.CardClass;
 import space.itoncek.trailcompass.objects.CardType;
 
@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class HomeGameDeck {
-	public final List<DatabaseCard> cards = new ArrayList<>();
+	public final List<DeckCard> cards = new ArrayList<>();
 
 	public HomeGameDeck(TrailServer server) {
 		cards.addAll(generateCurses());
@@ -36,22 +36,22 @@ public class HomeGameDeck {
         Collections.shuffle(cards);
 	}
 
-	private List<DatabaseCard> generateCurses() {
+	private List<DeckCard> generateCurses() {
         return Arrays.stream(CardType.values())
                 .filter(x->x.cardClass.equals(CardClass.Curse))
                 .map(this::generateCard)
                 .toList();
 	}
 
-	private DatabaseCard generateCard(CardType type) {
-		DatabaseCard card = new DatabaseCard();
+	private DeckCard generateCard(CardType type) {
+		DeckCard card = new DeckCard();
 		card.setId(UUID.randomUUID());
 		card.setType(type);
 		return card;
 	}
 
-	private List<DatabaseCard> generateCards(int count, CardType type) {
-		List<DatabaseCard> tempCards = new ArrayList<>();
+	private List<DeckCard> generateCards(int count, CardType type) {
+		List<DeckCard> tempCards = new ArrayList<>();
 		for (int i = 0; i < count; i++) {
 			tempCards.add(generateCard(type));
 		}
