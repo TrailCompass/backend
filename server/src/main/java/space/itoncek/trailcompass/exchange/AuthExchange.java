@@ -10,6 +10,7 @@ import javalinjwt.JWTProvider;
 import space.itoncek.trailcompass.TrailServer;
 import space.itoncek.trailcompass.commons.exchange.Authorized;
 import space.itoncek.trailcompass.commons.exchange.IAuthExchange;
+import space.itoncek.trailcompass.commons.objects.Player;
 import space.itoncek.trailcompass.commons.requests.auth.*;
 import space.itoncek.trailcompass.commons.responses.auth.LoginResponse;
 import space.itoncek.trailcompass.commons.responses.auth.ProfileListResponse;
@@ -149,22 +150,24 @@ public class AuthExchange implements IAuthExchange {
 			return null;
 		}
 
-		AtomicReference<List<DatabasePlayer>> players = new AtomicReference<>();
-		server.ef.runInTransaction(em -> {
-			players.set(em.createNamedQuery("findAllPlayers", DatabasePlayer.class).getResultList());
-		});
-
-		return new ProfileListResponse(
-				players.get()
-						.parallelStream()
-						.map(DatabasePlayer::serialize)
-						.toList()
-		);
+		return new ProfileListResponse(listPlayers());
 	}
 
 	public DecodedJWT getJWTToken(Authorized obj) {
 		Optional<DecodedJWT> decodedJWT = provider.validateToken(obj.token().token());
 		return decodedJWT.orElse(null);
+	}
+
+	public List<Player> listPlayers() {
+		AtomicReference<List<DatabasePlayer>> players = new AtomicReference<>();
+		server.ef.runInTransaction(em -> {
+			players.set(em.createNamedQuery("findAllPlayers", DatabasePlayer.class).getResultList());
+		});
+
+		return players.get()
+				.parallelStream()
+				.map(DatabasePlayer::serialize)
+				.toList();
 	}
 
 	public boolean needsDefaultUser() {

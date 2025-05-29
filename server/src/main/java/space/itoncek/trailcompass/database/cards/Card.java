@@ -10,7 +10,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+@Inheritance(strategy = InheritanceType.JOINED)
 @NamedQuery(name = "getAllCards", query = "SELECT c FROM Card c")
 @NamedQuery(name = "getAllCardsInDeck", query = "SELECT c FROM Card c WHERE c.owner IS NULL")
 public class Card {

@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import space.itoncek.trailcompass.SystemUtils;
 import space.itoncek.trailcompass.TrailServer;
 import space.itoncek.trailcompass.modules.config.Config;
 
@@ -24,8 +23,29 @@ public class ConfigManager {
 		this.file = new File("./data/config.json");
 
         if (!file.exists()) {
-            throw new RuntimeException("No config supplied, exiting!");
-        }
+			// TODO)) Remove once real solution for config is developed!
+			try (FileWriter fw = new FileWriter(file)) {
+				Gson gson = new GsonBuilder()
+						.setPrettyPrinting()
+						.registerTypeAdapter(ZonedDateTime.class, new TypeAdapter<ZonedDateTime>() {
+							@Override
+							public void write(JsonWriter out, ZonedDateTime value) throws IOException {
+								out.value(value.toString());
+							}
+
+							@Override
+							public ZonedDateTime read(JsonReader in) throws IOException {
+								return ZonedDateTime.parse(in.nextString());
+							}
+						})
+						.enableComplexMapKeySerialization()
+						.create();
+				Config cfg = Config.generate(server);
+				gson.toJson(cfg,fw);
+			} catch (IOException e) {
+				throw new RuntimeException("Unable to write the config file!",e);
+			}
+		}
     }
 
 	public Config getConfig() throws IOException {

@@ -1,13 +1,20 @@
 package space.itoncek.trailcompass;
 
 import io.javalin.Javalin;
+import static io.javalin.apibuilder.ApiBuilder.post;
+import static org.apache.commons.codec.digest.DigestUtils.sha512;
 import org.hibernate.SessionFactory;
 import org.hibernate.jpa.HibernatePersistenceConfiguration;
 import org.hibernate.tool.schema.Action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import space.itoncek.trailcompass.commons.utils.Base64Utils;
-import space.itoncek.trailcompass.database.*;
+import static space.itoncek.trailcompass.commons.utils.RandomUtils.generateRandomString;
+import static space.itoncek.trailcompass.commons.utils.RandomUtils.pickRandomStrings;
+import space.itoncek.trailcompass.database.DatabasePlayer;
+import space.itoncek.trailcompass.database.KeyStore;
+import space.itoncek.trailcompass.database.LocationEntry;
+import space.itoncek.trailcompass.database.PerformanceTrace;
 import space.itoncek.trailcompass.database.cards.Card;
 import space.itoncek.trailcompass.database.cards.DeckCard;
 import space.itoncek.trailcompass.database.cards.ShadowCard;
@@ -19,11 +26,6 @@ import space.itoncek.trailcompass.modules.LocationManager;
 
 import java.io.IOException;
 import java.util.TreeSet;
-
-import static io.javalin.apibuilder.ApiBuilder.post;
-import static org.apache.commons.codec.digest.DigestUtils.sha512;
-import static space.itoncek.trailcompass.commons.utils.RandomUtils.generateRandomString;
-import static space.itoncek.trailcompass.commons.utils.RandomUtils.pickRandomStrings;
 
 public class TrailServer {
 	private static final Logger log = LoggerFactory.getLogger(TrailServer.class);
@@ -64,9 +66,9 @@ public class TrailServer {
 				// Create a new EntityManagerFactory
 				.createEntityManagerFactory();
 
-		config = new ConfigManager(this);
 
 		tch = new TrailCompassHandler(this);
+		config = new ConfigManager(this);
 		lm = new LocationManager(this);
 		dm = new DeckManager(this);
 		gm = new GameManager(this);
@@ -165,6 +167,10 @@ public class TrailServer {
             tch.ex.auth().createUser(user, sha512(password), true);
             log.info(TextGraphics.generateLoginBox(user, password));
         }
+		// TODO)) Remove before release
+		//  use this to test different parts of the app as it is in it's ready state at this point
+		//  just set the breakpoint at the next line and wait for it to pause there.
+		System.out.println("breakpoint");
 	}
 
 	private void stop() throws IOException {
