@@ -18,8 +18,7 @@ import space.itoncek.trailcompass.database.PerformanceTrace;
 import space.itoncek.trailcompass.database.cards.Card;
 import space.itoncek.trailcompass.database.cards.DeckCard;
 import space.itoncek.trailcompass.database.cards.ShadowCard;
-import space.itoncek.trailcompass.database.curses.PlayedCurse;
-import space.itoncek.trailcompass.database.curses.TimeLimitedPlayedCurse;
+import space.itoncek.trailcompass.database.PlayedCurse;
 import space.itoncek.trailcompass.gamedata.utils.TextGraphics;
 import space.itoncek.trailcompass.modules.ConfigManager;
 import space.itoncek.trailcompass.modules.DeckManager;
@@ -56,8 +55,7 @@ public class TrailServer {
 						DeckCard.class,
 						ShadowCard.class,
 						//curses
-						PlayedCurse.class,
-						TimeLimitedPlayedCurse.class
+						PlayedCurse.class
 				)
 				.jdbcPoolSize(8)
 				// PostgreSQL
@@ -68,7 +66,7 @@ public class TrailServer {
 				// Automatic schema export
 				.schemaToolingAction(Action.UPDATE)
 				// SQL statement logging
-				.showSql(false, true, true)
+				.showSql(true, false, true)
 				// Create a new EntityManagerFactory
 				.createEntityManagerFactory();
 

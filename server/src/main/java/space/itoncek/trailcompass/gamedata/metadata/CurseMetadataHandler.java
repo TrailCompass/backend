@@ -72,7 +72,7 @@ public class CurseMetadataHandler {
 		};
 	}
 
-	public CardMetadata parseMetadataContextDependant(CardType cardType) throws IOException {
+    public CardMetadata parseMetadataContextDependant(CardType cardType) throws IOException {
 		GameSize size = server.config.getConfig().getRules().getSize();
 
 		if (cardType.cardClass != CardClass.Curse) {

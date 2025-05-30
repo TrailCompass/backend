@@ -1,18 +1,26 @@
 package space.itoncek.trailcompass.modules;
 
+import jakarta.persistence.EntityManager;
 import space.itoncek.trailcompass.TrailServer;
 import space.itoncek.trailcompass.commons.objects.CardCastRequirement;
+import space.itoncek.trailcompass.commons.objects.CardClass;
+import space.itoncek.trailcompass.commons.objects.CardType;
+import space.itoncek.trailcompass.commons.utils.BackendException;
 import space.itoncek.trailcompass.database.DatabasePlayer;
 import space.itoncek.trailcompass.database.cards.Card;
 import space.itoncek.trailcompass.database.cards.DeckCard;
 import space.itoncek.trailcompass.database.cards.ShadowCard;
+import space.itoncek.trailcompass.database.PlayedCurse;
 import space.itoncek.trailcompass.gamedata.HomeGameDeck;
 
+import java.io.IOException;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class DeckManager {
 	private final TrailServer server;
@@ -150,17 +158,159 @@ public class DeckManager {
 		return cards;
 	}
 
-	public CardCastRequirement getCardCastRequirement(UUID cardUUID) {
+	public CardCastRequirement getCardCastRequirement(UUID cardUUID) throws BackendException {
 		AtomicBoolean failed = new AtomicBoolean(false);
+		AtomicReference<CardType> cardType = new AtomicReference<>();
 		server.ef.runInTransaction(em -> {
 			Card card = em.find(Card.class, cardUUID);
 			if (card == null) {
 				failed.set(true);
 				return;
 			}
+			CardType ct = null;
+			if(card instanceof DeckCard dc) {
+				ct = dc.getType();
+			} else if (card instanceof ShadowCard sc) {
+				ct = sc.getMirroredCard().getType();
+			}
 
-
+			cardType.set(ct);
 		});
-		return CardCastRequirement.Nothing;
+
+		if (failed.get()) throw new BackendException("Unable to fetch the card!");
+		return cardType.get().requirement;
+	}
+
+	public void CastVoidCard(UUID cardId) throws BackendException {
+		AtomicReference<String> exception = new AtomicReference<>(null);
+		server.ef.runInTransaction(em -> {
+
+			try {
+				Card card = em.find(Card.class, cardId);
+				if (card == null) {
+					exception.set("Unable to find that card in the database!");
+					return;
+				}
+
+				if (card.getOwner() == null) {
+					exception.set("Nobody owns that card!");
+					return;
+				}
+
+				boolean shadowCard = false;
+				CardType cardType;
+				if (card instanceof ShadowCard sc) {
+					cardType = sc.getMirroredCard().getType();
+					shadowCard = true;
+				} else if (card instanceof DeckCard dc) {
+					cardType = dc.getType();
+				} else {
+					cardType = null;
+				}
+
+				if (cardType == null) {
+					exception.set("Unknown card type!");
+					return;
+				} else if (cardType.requirement != CardCastRequirement.Nothing) {
+					exception.set("Card does not have a void cast requirement!");
+					return;
+				}
+
+				if (cardType.cardClass.equals(CardClass.Curse)) {
+					castCurse(em, cardType);
+
+					if (shadowCard) em.remove(card);
+					else card.setOwner(null);
+				}
+
+			} catch (IOException e) {
+				exception.set(e.toString());
+			}
+		});
+
+		if (exception.get() != null) {
+			throw new BackendException(exception.get());
+		}
+	}
+
+	public void CastWithOtherCard(UUID cardId, UUID otherCardId) throws BackendException {
+		AtomicReference<String> exception = new AtomicReference<>(null);
+		server.ef.runInTransaction(em -> {
+			try {
+				Card card = em.find(Card.class, cardId);
+				Card otherCard = em.find(Card.class, otherCardId);
+				if (card == null || otherCard == null) {
+					exception.set("Unable to find that card in the database!");
+					return;
+				}
+
+				if (card.getOwner() == null || otherCard.getOwner() == null) {
+					exception.set("Nobody owns that card!");
+					return;
+				}
+
+				boolean shadowCard = false;
+				CardType cardType;
+				if (card instanceof ShadowCard sc) {
+					cardType = sc.getMirroredCard().getType();
+					shadowCard = true;
+				} else if (card instanceof DeckCard dc) {
+					cardType = dc.getType();
+				} else {
+					cardType = null;
+				}
+
+				if (cardType == null) {
+					exception.set("Unknown card type!");
+					return;
+				} else if (cardType.requirement != CardCastRequirement.OtherCard) {
+					exception.set("Card does not have a void cast requirement!");
+					return;
+				}
+
+				switch (cardType) {
+					case Discard1 -> {
+						removeCard(em, otherCard);
+						removeCard(em, card);
+
+						drawCardForPlayer(card.getOwner().getId());
+						drawCardForPlayer(card.getOwner().getId());
+					}
+					case Duplicate -> {
+						duplicateCard(otherCardId);
+						removeCard(em, card);
+					}
+					case Curse_OverflowingChalice, Curse_RightTurn -> {
+						castCurse(em,cardType);
+						removeCard(em, otherCard);
+						removeCard(em, card);
+					}
+                }
+			} catch (IOException e) {
+				exception.set(e.toString());
+			}
+		});
+
+		if (exception.get() != null) {
+			throw new BackendException(exception.get());
+		}
+	}
+
+	private static void removeCard(EntityManager em, Card card) {
+		if (card instanceof ShadowCard sc) {
+			em.remove(sc);
+		} else if (card instanceof DeckCard dc) {
+			dc.setOwner(null);
+		}
+	}
+
+	private void castCurse(EntityManager em, CardType cardType) throws IOException {
+		PlayedCurse pc = new PlayedCurse();
+		pc.setType(cardType);
+		pc.setCleared(false);
+		pc.setStart(ZonedDateTime.now());
+		pc.setCaster(em.find(DatabasePlayer.class, server.config.getConfig().getRules().getHider()));
+
+		em.persist(pc);
 	}
 }

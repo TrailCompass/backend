@@ -25,7 +25,7 @@ import java.time.ZonedDateTime;
 public class MapExchange implements IMapExchange {
 	private final TrailServer server;
 	private final JSONObject config;
-	private final FeatureLibrary flib;
+//	private final FeatureLibrary flib;
 	private String sha256 = null;
 	private ZonedDateTime timeout = ZonedDateTime.now().minusYears(100);
 
@@ -45,7 +45,7 @@ public class MapExchange implements IMapExchange {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		flib = new FeatureLibrary("./data/" + config.getString("feature-library"));
+//		flib = new FeatureLibrary("./data/" + config.getString("feature-library"));
 	}
 
 	@Override

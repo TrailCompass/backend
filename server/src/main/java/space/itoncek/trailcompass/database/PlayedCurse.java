@@ -1,4 +1,4 @@
-package space.itoncek.trailcompass.database.curses;
+package space.itoncek.trailcompass.database;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -11,7 +11,6 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-@Inheritance(strategy = InheritanceType.JOINED)
 public class PlayedCurse {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -20,4 +19,6 @@ public class PlayedCurse {
 	CardType type;
 	ZonedDateTime start;
 	boolean cleared;
+	@ManyToOne(targetEntity = DatabasePlayer.class)
+	DatabasePlayer caster;
 }

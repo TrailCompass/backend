@@ -44,7 +44,7 @@ public class TextGraphics {
 			   ██║   ██╔══██╗██╔══██║██║██║     ██║     ██║   ██║██║╚██╔╝██║██╔═══╝ ██╔══██║╚════██║╚════██║
 			   ██║   ██║  ██║██║  ██║██║███████╗╚██████╗╚██████╔╝██║ ╚═╝ ██║██║     ██║  ██║███████║███████║
 			   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝
-			                         Version: %s, built at: %s                                            \s
+			                     Version: %s, built at: %s                                            \s
 		\t
 		\t""".formatted(BuildMeta.APP_VERSION, ZonedDateTime.ofInstant(Instant.ofEpochMilli(BuildMeta.BUILD_TIME), ZoneId.of("Z")).withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime().format(DateTimeFormatter.ISO_DATE_TIME));
 	}

@@ -22,12 +22,15 @@ public class DatabasePlayer {
 	String nickname;
 	byte[] passwordHash;
 	boolean admin;
+
 	@OneToMany(targetEntity = LocationEntry.class, mappedBy = "player")
 	List<LocationEntry> tracList;
 	@OneToMany(targetEntity = DeckCard.class, mappedBy = "owner")
 	List<DeckCard> cards;
-	@OneToMany(targetEntity = DeckCard.class, mappedBy = "owner")
+	@OneToMany(targetEntity = ShadowCard.class, mappedBy = "owner")
 	List<ShadowCard> shadowCards;
+	@OneToMany(targetEntity = PlayedCurse.class, mappedBy = "caster")
+	List<PlayedCurse> playedCurses;
 
 	public Player serialize() {
 		return new Player(id, nickname, passwordHash,admin);
