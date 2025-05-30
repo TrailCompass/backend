@@ -1,9 +1,9 @@
 package space.itoncek.trailcompass.gamedata.metadata;
 
 import space.itoncek.trailcompass.TrailServer;
+import space.itoncek.trailcompass.commons.objects.CardClass;
+import space.itoncek.trailcompass.commons.objects.CardType;
 import space.itoncek.trailcompass.modules.config.GameSize;
-import space.itoncek.trailcompass.objects.CardClass;
-import space.itoncek.trailcompass.objects.CardType;
 
 import java.io.IOException;
 
@@ -75,14 +75,13 @@ public class CurseMetadataHandler {
 	public CardMetadata parseMetadataContextDependant(CardType cardType) throws IOException {
 		GameSize size = server.config.getConfig().getRules().getSize();
 
-		if(cardType.cardClass != CardClass.Curse) {
+		if (cardType.cardClass != CardClass.Curse) {
 			throw new IllegalArgumentException("Card is not a curse!");
 		}
 
 		CardMetadata cardMetadata = parseMetadata(cardType);
-
-		//TODO)) change description based on game size
-
-		return cardMetadata;
+		if (cardMetadata == null) return null;
+		String s = cardMetadata.description().replaceAll("\\[([^]]+),([^]]+),([^]]+)]", "$" + size.value);
+		return new CardMetadata(cardMetadata.cardClass(), cardMetadata.title(), s, cardMetadata.casting_cost());
 	}
 }

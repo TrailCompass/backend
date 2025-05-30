@@ -2,8 +2,8 @@ package space.itoncek.trailcompass.gamedata;
 
 import space.itoncek.trailcompass.TrailServer;
 import space.itoncek.trailcompass.database.cards.DeckCard;
-import space.itoncek.trailcompass.objects.CardClass;
-import space.itoncek.trailcompass.objects.CardType;
+import space.itoncek.trailcompass.commons.objects.CardClass;
+import space.itoncek.trailcompass.commons.objects.CardType;
 
 import java.io.IOException;
 import java.util.*;

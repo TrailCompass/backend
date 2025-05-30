@@ -1,12 +1,14 @@
 package space.itoncek.trailcompass.modules;
 
 import space.itoncek.trailcompass.TrailServer;
+import space.itoncek.trailcompass.commons.objects.CardCastRequirement;
 import space.itoncek.trailcompass.database.DatabasePlayer;
 import space.itoncek.trailcompass.database.cards.Card;
 import space.itoncek.trailcompass.database.cards.DeckCard;
 import space.itoncek.trailcompass.database.cards.ShadowCard;
 import space.itoncek.trailcompass.gamedata.HomeGameDeck;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -48,10 +50,10 @@ public class DeckManager {
 
 	public UUID drawCardForPlayer(UUID playerUUID) {
 		final UUID[] res = {null};
-		server.ef.runInTransaction(em-> {
+		server.ef.runInTransaction(em -> {
 			DatabasePlayer player = em.find(DatabasePlayer.class, playerUUID);
 			List<Card> cards = em.createNamedQuery("getAllCardsInDeck", Card.class).getResultList();
-			List<DeckCard> deckCards = cards.stream().filter(x->(x instanceof DeckCard)).map(x->(DeckCard)x).toList();
+			List<DeckCard> deckCards = cards.stream().filter(x -> (x instanceof DeckCard)).map(x -> (DeckCard) x).toList();
 			int randomId = new Random().nextInt(deckCards.size());
 
 			DeckCard card = deckCards.get(randomId);
@@ -74,7 +76,7 @@ public class DeckManager {
 
 			if (card instanceof DeckCard dc) {
 				sourceCard = dc;
-			} else if (card instanceof ShadowCard sc){
+			} else if (card instanceof ShadowCard sc) {
 				sourceCard = sc.getMirroredCard();
 			}
 
@@ -84,8 +86,81 @@ public class DeckManager {
 			em.persist(sc);
 		});
 
-		if(failed.get()) {
+		if (failed.get()) {
 			throw new IllegalArgumentException("Card duplication has failed!");
 		}
+	}
+
+	public List<DeckCard> listMyRealCards(UUID playerUUID) {
+		AtomicBoolean failed = new AtomicBoolean(false);
+		var ref = new Object() {
+			List<DeckCard> cards = null;
+		};
+		server.ef.runInTransaction(em -> {
+			DatabasePlayer player = em.find(DatabasePlayer.class, playerUUID);
+			if (player == null) {
+				failed.set(true);
+				return;
+			}
+
+			ref.cards = player.getCards();
+		});
+		if (failed.get()) {
+			throw new IllegalArgumentException("Card duplication has failed!");
+		}
+		return ref.cards;
+	}
+
+	public List<ShadowCard> listMyShadowCards(UUID playerUUID) {
+		AtomicBoolean failed = new AtomicBoolean(false);
+		var ref = new Object() {
+			List<ShadowCard> cards = null;
+		};
+		server.ef.runInTransaction(em -> {
+			DatabasePlayer player = em.find(DatabasePlayer.class, playerUUID);
+			if (player == null) {
+				failed.set(true);
+				return;
+			}
+
+			ref.cards = player.getShadowCards();
+		});
+		if (failed.get()) {
+			throw new IllegalArgumentException("Card duplication has failed!");
+		}
+		return ref.cards;
+	}
+
+	public List<Card> listAllMyCards(UUID playerUUID) {
+		AtomicBoolean failed = new AtomicBoolean(false);
+		final List<Card> cards = new ArrayList<>();
+		server.ef.runInTransaction(em -> {
+			DatabasePlayer player = em.find(DatabasePlayer.class, playerUUID);
+			if (player == null) {
+				failed.set(true);
+				return;
+			}
+
+			cards.addAll(player.getCards());
+			cards.addAll(player.getShadowCards());
+		});
+		if (failed.get()) {
+			throw new IllegalArgumentException("Card duplication has failed!");
+		}
+		return cards;
+	}
+
+	public CardCastRequirement getCardCastRequirement(UUID cardUUID) {
+		AtomicBoolean failed = new AtomicBoolean(false);
+		server.ef.runInTransaction(em -> {
+			Card card = em.find(Card.class, cardUUID);
+			if (card == null) {
+				failed.set(true);
+				return;
+			}
+
+
+		});
+		return CardCastRequirement.Nothing;
 	}
 }
