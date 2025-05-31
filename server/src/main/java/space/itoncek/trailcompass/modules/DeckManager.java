@@ -14,6 +14,7 @@ package space.itoncek.trailcompass.modules;
 
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.Nullable;
 import space.itoncek.trailcompass.TrailServer;
 import space.itoncek.trailcompass.commons.objects.CardCastRequirement;
 import space.itoncek.trailcompass.commons.objects.CardClass;
@@ -31,10 +32,7 @@ import space.itoncek.trailcompass.gamedata.HomeGameDeck;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -198,6 +196,17 @@ public class DeckManager {
 		return cardType.get().requirement;
 	}
 
+	@Nullable
+	private static CardType getCardType(Card card) {
+		if (card instanceof ShadowCard sc) {
+			return sc.getMirroredCard().getType();
+		} else if (card instanceof DeckCard dc) {
+			return dc.getType();
+		} else {
+			return null;
+		}
+	}
+
 	private static void removeCard(EntityManager em, Card card) {
 		if (card instanceof ShadowCard sc) {
 			log.info("Removing shadow card {} (type: {})", sc.getId(), sc.getMirroredCard().getType());
@@ -224,16 +233,7 @@ public class DeckManager {
 					return;
 				}
 
-				boolean shadowCard = false;
-				CardType cardType;
-				if (card instanceof ShadowCard sc) {
-					cardType = sc.getMirroredCard().getType();
-					shadowCard = true;
-				} else if (card instanceof DeckCard dc) {
-					cardType = dc.getType();
-				} else {
-					cardType = null;
-				}
+				CardType cardType = getCardType(card);
 
 				if (cardType == null) {
 					exception.set("Unknown card type!");
@@ -246,138 +246,9 @@ public class DeckManager {
 				if (cardType.cardClass.equals(CardClass.Curse)) {
 					castCurse(em, cardType, CurseMetadata.generatePlain());
 
-					if (shadowCard) em.remove(card);
-					else card.setOwner(null);
+					removeCard(em, card);
 				}
 
-			} catch (IOException e) {
-				exception.set(e.toString());
-			}
-		});
-
-		if (exception.get() != null) {
-			throw new BackendException(exception.get());
-		}
-	}
-
-	public void CastWithOtherCard(UUID cardId, UUID otherCardId) throws BackendException {
-		AtomicReference<String> exception = new AtomicReference<>(null);
-		server.ef.runInTransaction(em -> {
-			try {
-				Card card = em.find(Card.class, cardId);
-				Card otherCard = em.find(Card.class, otherCardId);
-				if (card == null || otherCard == null) {
-					exception.set("Unable to find that card in the database!");
-					return;
-				}
-
-				if (card.getOwner() == null || otherCard.getOwner() == null) {
-					exception.set("Nobody owns that card!");
-					return;
-				}
-
-                CardType cardType;
-				if (card instanceof ShadowCard sc) {
-					cardType = sc.getMirroredCard().getType();
-                } else if (card instanceof DeckCard dc) {
-					cardType = dc.getType();
-				} else {
-					cardType = null;
-				}
-
-				if (cardType == null) {
-					exception.set("Unknown card type!");
-					return;
-				} else if (cardType.requirement != CardCastRequirement.OtherCard) {
-					exception.set("Card does not have a \"OtherCard\" cast requirement!");
-					return;
-				}
-
-				switch (cardType) {
-					case Discard1 -> {
-						removeCard(em, otherCard);
-						removeCard(em, card);
-
-						drawCardForPlayer(card.getOwner().getId());
-						drawCardForPlayer(card.getOwner().getId());
-					}
-					case Duplicate -> {
-						duplicateCard(otherCardId);
-						removeCard(em, card);
-					}
-					case Curse_OverflowingChalice, Curse_RightTurn -> {
-						castCurse(em, cardType, CurseMetadata.generatePlain());
-						removeCard(em, otherCard);
-						removeCard(em, card);
-					}
-                }
-			} catch (IOException e) {
-				exception.set(e.toString());
-			}
-		});
-
-		if (exception.get() != null) {
-			throw new BackendException(exception.get());
-		}
-	}
-
-	public void CastWithTwoOtherCards(UUID cardId, UUID other1, UUID other2) throws BackendException {
-		AtomicReference<String> exception = new AtomicReference<>(null);
-		server.ef.runInTransaction(em -> {
-			try {
-				Card card = em.find(Card.class, cardId);
-				Card oCard1 = em.find(Card.class, other1);
-				Card oCard2 = em.find(Card.class, other1);
-				if (card == null || oCard1 == null || oCard2 == null) {
-					exception.set("Unable to find that card in the database!");
-					return;
-				}
-
-				if(oCard1.getId() == oCard2.getId()) {
-					exception.set("You need to select two different cards");
-					return;
-				}
-
-				if (card.getOwner() == null || oCard1.getOwner() == null || oCard2.getOwner() == null) {
-					exception.set("Nobody owns that card!");
-					return;
-				}
-
-                CardType cardType;
-				if (card instanceof ShadowCard sc) {
-					cardType = sc.getMirroredCard().getType();
-                } else if (card instanceof DeckCard dc) {
-					cardType = dc.getType();
-				} else {
-					cardType = null;
-				}
-
-				if (cardType == null) {
-					exception.set("Unknown card type!");
-					return;
-				} else if (cardType.requirement != CardCastRequirement.TwoOtherCards) {
-					exception.set("Card does not have a \"TwoOtherCards\" cast requirement!");
-					return;
-				}
-
-				switch (cardType) {
-					case Discard2 -> {
-						removeCard(em, card);
-						removeCard(em, oCard1);
-						removeCard(em, oCard2);
-
-						drawCardForPlayer(card.getOwner().getId());
-						drawCardForPlayer(card.getOwner().getId());
-						drawCardForPlayer(card.getOwner().getId());
-					}
-
-					case Curse_HiddenHangman, Curse_JammmedDoor, Curse_Urbex, Curse_EggPartner -> {
-						castCurse(em, cardType, CurseMetadata.generatePlain());
-						removeCard(em, card);
-						removeCard(em, oCard1);
-						removeCard(em, oCard2);
-					}
-                }
 			} catch (IOException e) {
 				exception.set(e.toString());
 			}
@@ -456,6 +327,120 @@ public class DeckManager {
 		if (ex.get() != null) throw new BackendException(ex.get());
 	}
 
+	public void CastWithOtherCard(UUID cardId, UUID otherCardId) throws BackendException {
+		AtomicReference<String> exception = new AtomicReference<>(null);
+		server.ef.runInTransaction(em -> {
+			try {
+				Card card = em.find(Card.class, cardId);
+				Card otherCard = em.find(Card.class, otherCardId);
+				if (card == null || otherCard == null) {
+					exception.set("Unable to find that card in the database!");
+					return;
+				}
+
+				if (card.getOwner() == null || otherCard.getOwner() == null) {
+					exception.set("Nobody owns that card!");
+					return;
+				}
+
+				CardType cardType = getCardType(card);
+
+				if (cardType == null) {
+					exception.set("Unknown card type!");
+					return;
+				} else if (cardType.requirement != CardCastRequirement.OtherCard) {
+					exception.set("Card does not have a \"OtherCard\" cast requirement!");
+					return;
+				}
+
+				switch (cardType) {
+					case Discard1 -> {
+						removeCard(em, otherCard);
+						removeCard(em, card);
+
+						drawCardForPlayer(card.getOwner().getId());
+						drawCardForPlayer(card.getOwner().getId());
+					}
+					case Duplicate -> {
+						duplicateCard(otherCardId);
+						removeCard(em, card);
+					}
+					case Curse_OverflowingChalice, Curse_RightTurn -> {
+						castCurse(em, cardType, CurseMetadata.generatePlain());
+						removeCard(em, otherCard);
+						removeCard(em, card);
+					}
+                }
+			} catch (IOException e) {
+				exception.set(e.toString());
+			}
+		});
+
+		if (exception.get() != null) {
+			throw new BackendException(exception.get());
+		}
+	}
+
+	public void CastWithTwoOtherCards(UUID cardId, UUID other1, UUID other2) throws BackendException {
+		AtomicReference<String> exception = new AtomicReference<>(null);
+		server.ef.runInTransaction(em -> {
+			try {
+				Card card = em.find(Card.class, cardId);
+				Card oCard1 = em.find(Card.class, other1);
+				Card oCard2 = em.find(Card.class, other1);
+				if (card == null || oCard1 == null || oCard2 == null) {
+					exception.set("Unable to find that card in the database!");
+					return;
+				}
+
+				if(oCard1.getId() == oCard2.getId()) {
+					exception.set("You need to select two different cards");
+					return;
+				}
+
+				if (card.getOwner() == null || oCard1.getOwner() == null || oCard2.getOwner() == null) {
+					exception.set("Nobody owns that card!");
+					return;
+				}
+
+				CardType cardType = getCardType(card);
+
+				if (cardType == null) {
+					exception.set("Unknown card type!");
+					return;
+				} else if (cardType.requirement != CardCastRequirement.TwoOtherCards) {
+					exception.set("Card does not have a \"TwoOtherCards\" cast requirement!");
+					return;
+				}
+
+				switch (cardType) {
+					case Discard2 -> {
+						removeCard(em, card);
+						removeCard(em, oCard1);
+						removeCard(em, oCard2);
+
+						drawCardForPlayer(card.getOwner().getId());
+						drawCardForPlayer(card.getOwner().getId());
+						drawCardForPlayer(card.getOwner().getId());
+					}
+
+					case Curse_HiddenHangman, Curse_JammmedDoor, Curse_Urbex, Curse_EggPartner -> {
+						castCurse(em, cardType, CurseMetadata.generatePlain());
+						removeCard(em, card);
+						removeCard(em, oCard1);
+						removeCard(em, oCard2);
+					}
+                }
+			} catch (IOException e) {
+				exception.set(e.toString());
+			}
+		});
+
+		if (exception.get() != null) {
+			throw new BackendException(exception.get());
+		}
+	}
+
 	private void castCurse(EntityManager em, CardType cardType, CurseMetadata cm) throws IOException {
 		log.info("Casting curse with type {}", cardType);
 		PlayedCurse pc = new PlayedCurse();
@@ -471,5 +456,37 @@ public class DeckManager {
 
 	private DatabasePlayer getHider(EntityManager em) throws IOException {
 		return em.find(DatabasePlayer.class, server.config.getConfig().getRules().getHider());
+	}
+
+	public void CastWithOtherTimeBonusCard(UUID cardId, UUID otherCardId) throws BackendException {
+		var ref = new Object() {
+			boolean isTimeBonus;
+		};
+		server.ef.runInTransaction(em -> {
+			Card card = em.find(Card.class, otherCardId);
+			ref.isTimeBonus = Objects.requireNonNull(getCardType(card)).cardClass.equals(CardClass.Time);
+		});
+
+		if (!ref.isTimeBonus) {
+			throw new BackendException("That card is not a time bonus!");
+		}
+
+		CastWithOtherCard(cardId, otherCardId);
+	}
+
+	public void CastWithOtherPowerupCard(UUID cardId, UUID otherCardId) throws BackendException {
+		var ref = new Object() {
+			boolean isPowerup;
+		};
+		server.ef.runInTransaction(em -> {
+			Card card = em.find(Card.class, otherCardId);
+			ref.isPowerup = Objects.requireNonNull(getCardType(card)).cardClass.equals(CardClass.Powerup);
+		});
+
+		if (!ref.isPowerup) {
+			throw new BackendException("That card is not a powerup bonus!");
+		}
+
+		CastWithOtherCard(cardId, otherCardId);
 	}
 }
