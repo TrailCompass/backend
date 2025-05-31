@@ -21,6 +21,7 @@ import space.itoncek.trailcompass.commons.objects.CardType;
 import space.itoncek.trailcompass.commons.utils.BackendException;
 import space.itoncek.trailcompass.database.CurseMetadata;
 import space.itoncek.trailcompass.database.DatabasePlayer;
+import space.itoncek.trailcompass.database.FreeQuestionToken;
 import space.itoncek.trailcompass.database.PlayedCurse;
 import space.itoncek.trailcompass.database.cards.Card;
 import space.itoncek.trailcompass.database.cards.DeckCard;
@@ -441,16 +442,34 @@ public class DeckManager {
 		}
 	}
 
+	public void CastWithFreeQuestion(UUID cardId) throws BackendException {
+		CastVoidCard(cardId);
+		AtomicReference<Exception> ex = new AtomicReference<>(null);
+		server.ef.runInTransaction(em -> {
+			try {
+				getHider(em).getFreeQuestions().add(new FreeQuestionToken());
+			} catch (IOException e) {
+				ex.set(e);
+			}
+		});
+
+		if (ex.get() != null) throw new BackendException(ex.get());
+	}
+
 	private void castCurse(EntityManager em, CardType cardType, CurseMetadata cm) throws IOException {
 		log.info("Casting curse with type {}", cardType);
 		PlayedCurse pc = new PlayedCurse();
 		pc.setType(cardType);
 		pc.setCleared(false);
 		pc.setStart(ZonedDateTime.now());
-		pc.setCaster(em.find(DatabasePlayer.class, server.config.getConfig().getRules().getHider()));
+		pc.setHider(getHider(em));
 		pc.setMetadata(cm);
 
 		em.persist(cm);
 		em.persist(pc);
+	}
+
+	private DatabasePlayer getHider(EntityManager em) throws IOException {
+		return em.find(DatabasePlayer.class, server.config.getConfig().getRules().getHider());
 	}
 }

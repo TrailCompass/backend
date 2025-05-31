@@ -32,7 +32,7 @@ public class PlayedCurse {
 	ZonedDateTime start;
 	boolean cleared;
 	@ManyToOne(targetEntity = DatabasePlayer.class)
-	DatabasePlayer caster;
+	DatabasePlayer hider;
 	@OneToOne(targetEntity = CurseMetadata.class, optional = false)
 	CurseMetadata metadata;
 }

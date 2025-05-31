@@ -67,7 +67,8 @@ public class TrailServer {
 						//curses
 						PlayedCurse.class,
 						CurseMetadata.class,
-						TextCurse.class
+						TextCurse.class,
+						FreeQuestionToken.class
 				)
 				.jdbcPoolSize(8)
 				// PostgreSQL
