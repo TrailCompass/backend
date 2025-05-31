@@ -249,12 +249,10 @@ public class DeckManager {
 					return;
 				}
 
-				boolean shadowCard = false;
-				CardType cardType;
+                CardType cardType;
 				if (card instanceof ShadowCard sc) {
 					cardType = sc.getMirroredCard().getType();
-					shadowCard = true;
-				} else if (card instanceof DeckCard dc) {
+                } else if (card instanceof DeckCard dc) {
 					cardType = dc.getType();
 				} else {
 					cardType = null;
@@ -264,7 +262,7 @@ public class DeckManager {
 					exception.set("Unknown card type!");
 					return;
 				} else if (cardType.requirement != CardCastRequirement.OtherCard) {
-					exception.set("Card does not have a void cast requirement!");
+					exception.set("Card does not have a \"OtherCard\" cast requirement!");
 					return;
 				}
 
@@ -284,6 +282,72 @@ public class DeckManager {
 						castCurse(em,cardType);
 						removeCard(em, otherCard);
 						removeCard(em, card);
+					}
+                }
+			} catch (IOException e) {
+				exception.set(e.toString());
+			}
+		});
+
+		if (exception.get() != null) {
+			throw new BackendException(exception.get());
+		}
+	}
+	public void CastWithTwoOtherCards(UUID cardId, UUID other1, UUID other2) throws BackendException {
+		AtomicReference<String> exception = new AtomicReference<>(null);
+		server.ef.runInTransaction(em -> {
+			try {
+				Card card = em.find(Card.class, cardId);
+				Card oCard1 = em.find(Card.class, other1);
+				Card oCard2 = em.find(Card.class, other1);
+				if (card == null || oCard1 == null || oCard2 == null) {
+					exception.set("Unable to find that card in the database!");
+					return;
+				}
+
+				if(oCard1.getId() == oCard2.getId()) {
+					exception.set("You need to select two different cards");
+					return;
+				}
+
+				if (card.getOwner() == null || oCard1.getOwner() == null || oCard2.getOwner() == null) {
+					exception.set("Nobody owns that card!");
+					return;
+				}
+
+                CardType cardType;
+				if (card instanceof ShadowCard sc) {
+					cardType = sc.getMirroredCard().getType();
+                } else if (card instanceof DeckCard dc) {
+					cardType = dc.getType();
+				} else {
+					cardType = null;
+				}
+
+				if (cardType == null) {
+					exception.set("Unknown card type!");
+					return;
+				} else if (cardType.requirement != CardCastRequirement.TwoOtherCards) {
+					exception.set("Card does not have a \"TwoOtherCards\" cast requirement!");
+					return;
+				}
+
+				switch (cardType) {
+					case Discard2 -> {
+						removeCard(em, card);
+						removeCard(em, oCard1);
+						removeCard(em, oCard2);
+
+						drawCardForPlayer(card.getOwner().getId());
+						drawCardForPlayer(card.getOwner().getId());
+						drawCardForPlayer(card.getOwner().getId());
+					}
+
+					case Curse_HiddenHangman, Curse_JammmedDoor, Curse_Urbex, Curse_EggPartner -> {
+						castCurse(em, cardType);
+						removeCard(em, card);
+						removeCard(em, oCard1);
+						removeCard(em, oCard2);
 					}
                 }
 			} catch (IOException e) {
