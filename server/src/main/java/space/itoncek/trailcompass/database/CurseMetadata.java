@@ -15,24 +15,19 @@ package space.itoncek.trailcompass.database;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import space.itoncek.trailcompass.commons.objects.CardType;
 
-import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Getter
 @Setter
 @Entity
-public class PlayedCurse {
-	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
-	UUID id;
-	@Enumerated(value = EnumType.STRING)
-	CardType type;
-	ZonedDateTime start;
-	boolean cleared;
-	@ManyToOne(targetEntity = DatabasePlayer.class)
-	DatabasePlayer caster;
-	@OneToOne(targetEntity = CurseMetadata.class, optional = false)
-	CurseMetadata metadata;
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+public class CurseMetadata {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    UUID id;
+
+    public static CurseMetadata generatePlain() {
+        return new CurseMetadata();
+    }
 }

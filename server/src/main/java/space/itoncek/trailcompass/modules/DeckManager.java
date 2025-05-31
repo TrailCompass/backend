@@ -13,16 +13,19 @@ package space.itoncek.trailcompass.modules;
  */
 
 import jakarta.persistence.EntityManager;
+import lombok.extern.slf4j.Slf4j;
 import space.itoncek.trailcompass.TrailServer;
 import space.itoncek.trailcompass.commons.objects.CardCastRequirement;
 import space.itoncek.trailcompass.commons.objects.CardClass;
 import space.itoncek.trailcompass.commons.objects.CardType;
 import space.itoncek.trailcompass.commons.utils.BackendException;
+import space.itoncek.trailcompass.database.CurseMetadata;
 import space.itoncek.trailcompass.database.DatabasePlayer;
 import space.itoncek.trailcompass.database.PlayedCurse;
 import space.itoncek.trailcompass.database.cards.Card;
 import space.itoncek.trailcompass.database.cards.DeckCard;
 import space.itoncek.trailcompass.database.cards.ShadowCard;
+import space.itoncek.trailcompass.database.curses.TextCurse;
 import space.itoncek.trailcompass.gamedata.HomeGameDeck;
 
 import java.io.IOException;
@@ -34,6 +37,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+@Slf4j
 public class DeckManager {
 	private final TrailServer server;
 
@@ -193,6 +197,16 @@ public class DeckManager {
 		return cardType.get().requirement;
 	}
 
+	private static void removeCard(EntityManager em, Card card) {
+		if (card instanceof ShadowCard sc) {
+			log.info("Removing shadow card {} (type: {})", sc.getId(), sc.getMirroredCard().getType());
+			em.remove(sc);
+		} else if (card instanceof DeckCard dc) {
+			log.info("Removing deck card {} (type: {})", dc.getId(), dc.getType());
+			dc.setOwner(null);
+		}
+	}
+
 	public void CastVoidCard(UUID cardId) throws BackendException {
 		AtomicReference<String> exception = new AtomicReference<>(null);
 		server.ef.runInTransaction(em -> {
@@ -229,7 +243,7 @@ public class DeckManager {
 				}
 
 				if (cardType.cardClass.equals(CardClass.Curse)) {
-					castCurse(em, cardType);
+					castCurse(em, cardType, CurseMetadata.generatePlain());
 
 					if (shadowCard) em.remove(card);
 					else card.setOwner(null);
@@ -291,7 +305,7 @@ public class DeckManager {
 						removeCard(em, card);
 					}
 					case Curse_OverflowingChalice, Curse_RightTurn -> {
-						castCurse(em,cardType);
+						castCurse(em, cardType, CurseMetadata.generatePlain());
 						removeCard(em, otherCard);
 						removeCard(em, card);
 					}
@@ -305,6 +319,7 @@ public class DeckManager {
 			throw new BackendException(exception.get());
 		}
 	}
+
 	public void CastWithTwoOtherCards(UUID cardId, UUID other1, UUID other2) throws BackendException {
 		AtomicReference<String> exception = new AtomicReference<>(null);
 		server.ef.runInTransaction(em -> {
@@ -356,7 +371,7 @@ public class DeckManager {
 					}
 
 					case Curse_HiddenHangman, Curse_JammmedDoor, Curse_Urbex, Curse_EggPartner -> {
-						castCurse(em, cardType);
+						castCurse(em, cardType, CurseMetadata.generatePlain());
 						removeCard(em, card);
 						removeCard(em, oCard1);
 						removeCard(em, oCard2);
@@ -372,21 +387,70 @@ public class DeckManager {
 		}
 	}
 
-	private static void removeCard(EntityManager em, Card card) {
-		if (card instanceof ShadowCard sc) {
-			em.remove(sc);
-		} else if (card instanceof DeckCard dc) {
-			dc.setOwner(null);
+	public void CastWithText(UUID cardId, String text) throws BackendException {
+		AtomicReference<String> exception = new AtomicReference<>(null);
+		server.ef.runInTransaction(em -> {
+
+			try {
+				Card card = em.find(Card.class, cardId);
+				if (card == null) {
+					exception.set("Unable to find that card in the database!");
+					return;
+				}
+
+				if (card.getOwner() == null) {
+					exception.set("Nobody owns that card!");
+					return;
+				}
+
+				boolean shadowCard = false;
+				CardType cardType;
+				if (card instanceof ShadowCard sc) {
+					cardType = sc.getMirroredCard().getType();
+					shadowCard = true;
+				} else if (card instanceof DeckCard dc) {
+					cardType = dc.getType();
+				} else {
+					cardType = null;
+				}
+
+				if (cardType == null) {
+					exception.set("Unknown card type!");
+					return;
+				} else if (cardType.requirement != CardCastRequirement.Nothing) {
+					exception.set("Card does not have a void cast requirement!");
+					return;
+				}
+
+
+				switch (cardType) {
+					case Curse_Cairn, Curse_BirdGuide -> {
+						TextCurse tc = new TextCurse();
+						tc.setText(text);
+						castCurse(em, cardType, tc);
+						removeCard(em, card);
+					}
+				}
+			} catch (IOException e) {
+				exception.set(e.toString());
+			}
+		});
+
+		if (exception.get() != null) {
+			throw new BackendException(exception.get());
 		}
 	}
 
-	private void castCurse(EntityManager em, CardType cardType) throws IOException {
+	private void castCurse(EntityManager em, CardType cardType, CurseMetadata cm) throws IOException {
+		log.info("Casting curse with type {}", cardType);
 		PlayedCurse pc = new PlayedCurse();
 		pc.setType(cardType);
 		pc.setCleared(false);
 		pc.setStart(ZonedDateTime.now());
 		pc.setCaster(em.find(DatabasePlayer.class, server.config.getConfig().getRules().getHider()));
+		pc.setMetadata(cm);
 
+		em.persist(cm);
 		em.persist(pc);
 	}
 }
