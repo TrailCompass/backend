@@ -1,5 +1,17 @@
 package space.itoncek.trailcompass.modules;
 
+/*
+ *
+ * ████████╗██████╗  █████╗ ██╗██╗      ██████╗ ██████╗ ███╗   ███╗██████╗  █████╗ ███████╗███████╗
+ * ╚══██╔══╝██╔══██╗██╔══██╗██║██║     ██╔════╝██╔═══██╗████╗ ████║██╔══██╗██╔══██╗██╔════╝██╔════╝
+ *    ██║   ██████╔╝███████║██║██║     ██║     ██║   ██║██╔████╔██║██████╔╝███████║███████╗███████╗
+ *    ██║   ██╔══██╗██╔══██║██║██║     ██║     ██║   ██║██║╚██╔╝██║██╔═══╝ ██╔══██║╚════██║╚════██║
+ *    ██║   ██║  ██║██║  ██║██║███████╗╚██████╗╚██████╔╝██║ ╚═╝ ██║██║     ██║  ██║███████║███████║
+ *    ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝
+ *
+ *                                    Copyright (c) 2025.
+ */
+
 import jakarta.persistence.EntityManager;
 import space.itoncek.trailcompass.TrailServer;
 import space.itoncek.trailcompass.commons.objects.CardCastRequirement;
@@ -7,10 +19,10 @@ import space.itoncek.trailcompass.commons.objects.CardClass;
 import space.itoncek.trailcompass.commons.objects.CardType;
 import space.itoncek.trailcompass.commons.utils.BackendException;
 import space.itoncek.trailcompass.database.DatabasePlayer;
+import space.itoncek.trailcompass.database.PlayedCurse;
 import space.itoncek.trailcompass.database.cards.Card;
 import space.itoncek.trailcompass.database.cards.DeckCard;
 import space.itoncek.trailcompass.database.cards.ShadowCard;
-import space.itoncek.trailcompass.database.PlayedCurse;
 import space.itoncek.trailcompass.gamedata.HomeGameDeck;
 
 import java.io.IOException;

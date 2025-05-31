@@ -1,5 +1,17 @@
 package space.itoncek.trailcompass.exchange;
 
+/*
+ *
+ * ████████╗██████╗  █████╗ ██╗██╗      ██████╗ ██████╗ ███╗   ███╗██████╗  █████╗ ███████╗███████╗
+ * ╚══██╔══╝██╔══██╗██╔══██╗██║██║     ██╔════╝██╔═══██╗████╗ ████║██╔══██╗██╔══██╗██╔════╝██╔════╝
+ *    ██║   ██████╔╝███████║██║██║     ██║     ██║   ██║██╔████╔██║██████╔╝███████║███████╗███████╗
+ *    ██║   ██╔══██╗██╔══██║██║██║     ██║     ██║   ██║██║╚██╔╝██║██╔═══╝ ██╔══██║╚════██║╚════██║
+ *    ██║   ██║  ██║██║  ██║██║███████╗╚██████╗╚██████╔╝██║ ╚═╝ ██║██║     ██║  ██║███████║███████║
+ *    ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝
+ *
+ *                                    Copyright (c) 2025.
+ */
+
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.JWTVerifier;
@@ -16,7 +28,6 @@ import space.itoncek.trailcompass.commons.responses.auth.LoginResponse;
 import space.itoncek.trailcompass.commons.responses.auth.ProfileListResponse;
 import space.itoncek.trailcompass.commons.responses.auth.ProfileResponse;
 import space.itoncek.trailcompass.commons.responses.generic.OkResponse;
-import static space.itoncek.trailcompass.commons.utils.RandomUtils.generateRandomString;
 import space.itoncek.trailcompass.database.DatabasePlayer;
 import space.itoncek.trailcompass.objects.UserMeta;
 
@@ -25,6 +36,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static space.itoncek.trailcompass.commons.utils.RandomUtils.generateRandomString;
 
 public class AuthExchange implements IAuthExchange {
 	private final TrailServer server;
