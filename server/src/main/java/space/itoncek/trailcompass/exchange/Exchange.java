@@ -13,6 +13,7 @@ package space.itoncek.trailcompass.exchange;
  */
 
 import space.itoncek.trailcompass.TrailServer;
+import space.itoncek.trailcompass.commons.exchange.IDeckExchange;
 import space.itoncek.trailcompass.commons.exchange.IExchange;
 
 public class Exchange implements IExchange {
@@ -21,6 +22,7 @@ public class Exchange implements IExchange {
 	private final SystemExchange sx;
 	private final MapExchange mx;
 	private final GameManagerExchange gmx;
+	private final DeckExchange dx;
 
 	public Exchange(TrailServer server) {
 		this.server = server;
@@ -28,6 +30,7 @@ public class Exchange implements IExchange {
 		sx = new SystemExchange(server);
 		mx = new MapExchange(server);
 		gmx = new GameManagerExchange(server);
+		dx = new DeckExchange(server);
 	}
 
 	@Override
@@ -48,5 +51,10 @@ public class Exchange implements IExchange {
 	@Override
 	public GameManagerExchange gameMgr() {
 		return gmx;
+	}
+
+	@Override
+	public IDeckExchange deck() {
+		return dx;
 	}
 }

@@ -31,4 +31,5 @@ public class Card {
     UUID id;
     @ManyToOne(targetEntity = DatabasePlayer.class,fetch = FetchType.LAZY)
     DatabasePlayer owner;
+
 }

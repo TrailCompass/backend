@@ -69,11 +69,11 @@ public class TrailCompassHandler {
 				case SeekerLocationRequest req -> ex.gameMgr().getSeekerLocation(req);
 				case StartingTimeRequest req -> ex.gameMgr().getStartingTime(req);
 				/* default */
-				case null, default -> new ErrorResponse("There is no handler for that request!");
+				case null, default -> new ErrorResponse("There is no handler for that request!", new Exception());
 			};
 		} catch (Exception e) {
 			log.error("Server handler error", e);
-			return new ErrorResponse("Serverside error, please check server console!\n" + e);
+			return new ErrorResponse("Serverside error, please check server console!",e);
 		}
 	}
 }

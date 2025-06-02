@@ -25,4 +25,8 @@ import space.itoncek.trailcompass.commons.objects.CardType;
 public class DeckCard extends Card {
 	@Enumerated(value = EnumType.STRING)
 	CardType type;
+
+	public space.itoncek.trailcompass.commons.objects.Card serialize() {
+		return new space.itoncek.trailcompass.commons.objects.Card(getId(),getOwner().getId(),getType(),false);
+	}
 }

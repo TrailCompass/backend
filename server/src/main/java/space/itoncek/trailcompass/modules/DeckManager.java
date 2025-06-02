@@ -86,7 +86,7 @@ public class DeckManager {
 		return res[0];
 	}
 
-	public void duplicateCard(UUID cardID) {
+	public void duplicateCard(UUID cardID) throws BackendException {
 		AtomicBoolean failed = new AtomicBoolean(false);
 		server.ef.runInTransaction(em -> {
 			Card card = em.find(Card.class, cardID);
@@ -110,15 +110,13 @@ public class DeckManager {
 		});
 
 		if (failed.get()) {
-			throw new IllegalArgumentException("Card duplication has failed!");
+			throw new BackendException("Card duplication has failed!");
 		}
 	}
 
-	public List<DeckCard> listMyRealCards(UUID playerUUID) {
+	public List<space.itoncek.trailcompass.commons.objects.Card> listAllMyCards(UUID playerUUID) throws BackendException {
 		AtomicBoolean failed = new AtomicBoolean(false);
-		var ref = new Object() {
-			List<DeckCard> cards = null;
-		};
+		List<space.itoncek.trailcompass.commons.objects.Card> cards = new ArrayList<>();
 		server.ef.runInTransaction(em -> {
 			DatabasePlayer player = em.find(DatabasePlayer.class, playerUUID);
 			if (player == null) {
@@ -126,49 +124,20 @@ public class DeckManager {
 				return;
 			}
 
-			ref.cards = player.getCards();
+			cards.addAll(player.getCards()
+					.parallelStream()
+					.map(DeckCard::serialize)
+					.toList()
+			);
+
+			cards.addAll(player.getShadowCards()
+					.parallelStream()
+					.map(ShadowCard::serialize)
+					.toList()
+			);
 		});
 		if (failed.get()) {
-			throw new IllegalArgumentException("Card duplication has failed!");
-		}
-		return ref.cards;
-	}
-
-	public List<ShadowCard> listMyShadowCards(UUID playerUUID) {
-		AtomicBoolean failed = new AtomicBoolean(false);
-		var ref = new Object() {
-			List<ShadowCard> cards = null;
-		};
-		server.ef.runInTransaction(em -> {
-			DatabasePlayer player = em.find(DatabasePlayer.class, playerUUID);
-			if (player == null) {
-				failed.set(true);
-				return;
-			}
-
-			ref.cards = player.getShadowCards();
-		});
-		if (failed.get()) {
-			throw new IllegalArgumentException("Card duplication has failed!");
-		}
-		return ref.cards;
-	}
-
-	public List<Card> listAllMyCards(UUID playerUUID) {
-		AtomicBoolean failed = new AtomicBoolean(false);
-		final List<Card> cards = new ArrayList<>();
-		server.ef.runInTransaction(em -> {
-			DatabasePlayer player = em.find(DatabasePlayer.class, playerUUID);
-			if (player == null) {
-				failed.set(true);
-				return;
-			}
-
-			cards.addAll(player.getCards());
-			cards.addAll(player.getShadowCards());
-		});
-		if (failed.get()) {
-			throw new IllegalArgumentException("Card duplication has failed!");
+			throw new BackendException("Card listing has failed!");
 		}
 		return cards;
 	}
@@ -182,18 +151,29 @@ public class DeckManager {
 				failed.set(true);
 				return;
 			}
-			CardType ct = null;
-			if(card instanceof DeckCard dc) {
-				ct = dc.getType();
-			} else if (card instanceof ShadowCard sc) {
-				ct = sc.getMirroredCard().getType();
-			}
+			CardType ct = getCardType(card);
 
 			cardType.set(ct);
 		});
 
 		if (failed.get()) throw new BackendException("Unable to fetch the card!");
 		return cardType.get().requirement;
+	}
+
+	public space.itoncek.trailcompass.commons.objects.Card getCardMetadata(UUID cardId) {
+		var ref = new Object() {
+			space.itoncek.trailcompass.commons.objects.Card c = null;
+		};
+		server.ef.runInTransaction(em -> {
+			Card card = em.find(Card.class,cardId);
+
+			if(card instanceof DeckCard dc) {
+				ref.c = dc.serialize();
+			} else if (card instanceof ShadowCard sc) {
+				ref.c = sc.serialize();
+			}
+		});
+		return ref.c;
 	}
 
 	@Nullable
@@ -371,7 +351,7 @@ public class DeckManager {
 						removeCard(em, card);
 					}
                 }
-			} catch (IOException e) {
+			} catch (IOException | BackendException e) {
 				exception.set(e.toString());
 			}
 		});
