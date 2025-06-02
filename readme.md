@@ -5,7 +5,7 @@
 
 Wanted to play Hide & Seek across a city, country or a continent? Well you've probably encountered issues making
 tracking of other players work. Well fear not, we've made TrailCompass to help. **This is the server repo, for setup,
-visit (TODO) Wiki and for android app, visit [TrailCompass/app](https://github.com/TrailCompass/app)**
+visit [Wiki](https://trailcompass.itoncek.space/) and for android app, visit [TrailCompass/app](https://github.com/TrailCompass/app)**
 
 *(Not affiliated with Watch Nebula LLC nor Jet Lag: The Game, TrailCompass is an unofficial fan-made game. Branding,
 Trademarks and Copyright of JetLag: The Game are, and remain
