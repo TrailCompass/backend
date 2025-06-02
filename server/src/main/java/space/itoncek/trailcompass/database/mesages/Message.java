@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import space.itoncek.trailcompass.database.DatabasePlayer;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Getter
@@ -18,4 +19,6 @@ public class Message {
     DatabasePlayer sender;
     @ManyToOne(targetEntity = DatabasePlayer.class,fetch = FetchType.LAZY)
     DatabasePlayer receiver;
+    /* Null if not read */
+    ZonedDateTime read;
 }
