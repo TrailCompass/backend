@@ -1,4 +1,4 @@
-package space.itoncek.trailcompass.database.mesages;
+package space.itoncek.trailcompass.database.messages;
 
 import jakarta.persistence.*;
 import lombok.Getter;
