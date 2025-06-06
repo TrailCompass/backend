@@ -73,7 +73,7 @@ public class TrailServer {
 						//messages
 						Message.class,
 						TextMessage.class,
-						CurseMessage.class,
+						CardCastMessage.class,
 						GameeventMessage.class,
 						RequestMessage.class
 				)

@@ -7,6 +7,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-public class CurseMessage extends Message {
+public class CardCastMessage extends Message {
     // TODO: Complete this
 }
