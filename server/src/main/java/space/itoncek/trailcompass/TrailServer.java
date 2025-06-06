@@ -25,6 +25,7 @@ import space.itoncek.trailcompass.database.cards.DeckCard;
 import space.itoncek.trailcompass.database.cards.ShadowCard;
 import space.itoncek.trailcompass.database.curses.TextCurse;
 import space.itoncek.trailcompass.database.messages.Message;
+import space.itoncek.trailcompass.database.messages.TextMessage;
 import space.itoncek.trailcompass.gamedata.utils.TextGraphics;
 import space.itoncek.trailcompass.modules.ConfigManager;
 import space.itoncek.trailcompass.modules.DeckManager;
@@ -71,7 +72,8 @@ public class TrailServer {
 						TextCurse.class,
 						FreeQuestionToken.class,
 						//messages
-						Message.class
+						Message.class,
+						TextMessage.class
 				)
 				.jdbcPoolSize(8)
 				// PostgreSQL
