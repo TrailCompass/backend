@@ -18,12 +18,12 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import space.itoncek.trailcompass.TrailServer;
-import space.itoncek.trailcompass.commons.exchange.IMapExchange;
-import space.itoncek.trailcompass.commons.requests.map.MapHashRequest;
-import space.itoncek.trailcompass.commons.requests.map.MapRequest;
-import space.itoncek.trailcompass.commons.responses.map.MapHashResponse;
-import space.itoncek.trailcompass.commons.responses.map.MapResponse;
-import space.itoncek.trailcompass.commons.utils.BackendException;
+import space.itoncek.trailcompass.proto.exchange.IMapExchange;
+import space.itoncek.trailcompass.proto.requests.map.MapHashRequest;
+import space.itoncek.trailcompass.proto.requests.map.MapRequest;
+import space.itoncek.trailcompass.proto.responses.map.MapHashResponse;
+import space.itoncek.trailcompass.proto.responses.map.MapResponse;
+import space.itoncek.trailcompass.proto.utils.BackendException;
 
 import java.io.File;
 import java.io.FileInputStream;

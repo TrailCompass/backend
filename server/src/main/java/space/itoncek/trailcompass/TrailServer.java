@@ -18,7 +18,7 @@ import org.hibernate.jpa.HibernatePersistenceConfiguration;
 import org.hibernate.tool.schema.Action;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import space.itoncek.trailcompass.commons.utils.Base64Utils;
+import space.itoncek.trailcompass.proto.utils.Base64Utils;
 import space.itoncek.trailcompass.database.*;
 import space.itoncek.trailcompass.database.cards.Card;
 import space.itoncek.trailcompass.database.cards.DeckCard;
@@ -36,8 +36,8 @@ import java.util.TreeSet;
 
 import static io.javalin.apibuilder.ApiBuilder.post;
 import static org.apache.commons.codec.digest.DigestUtils.sha512;
-import static space.itoncek.trailcompass.commons.utils.RandomUtils.generateRandomString;
-import static space.itoncek.trailcompass.commons.utils.RandomUtils.pickRandomStrings;
+import static space.itoncek.trailcompass.proto.utils.RandomUtils.generateRandomString;
+import static space.itoncek.trailcompass.proto.utils.RandomUtils.pickRandomStrings;
 
 public class TrailServer {
 	private static final Logger log = LoggerFactory.getLogger(TrailServer.class);

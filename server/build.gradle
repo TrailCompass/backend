@@ -6,7 +6,7 @@ plugins {
 group = 'space.itoncek.trailcompass'
 version = parent.version
 
-String javalinVersion = "6.6.0"
+String javalinVersion = "6.7.0"
 
 repositories {
     mavenCentral()
@@ -24,7 +24,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
     implementation 'org.mariadb.jdbc:mariadb-java-client:3.5.1'
     implementation("com.github.kmehrunes:javalin-jwt:0.7.0")
-    implementation("org.apache.commons:commons-lang3:3.14.0")
+    implementation('org.apache.commons:commons-lang3:3.18.0')
     implementation 'commons-codec:commons-codec:1.16.0'
     implementation("commons-io:commons-io:2.15.1")
     implementation('com.geodesk:geodesk:0.2.1')
@@ -41,7 +41,7 @@ dependencies {
     implementation "org.hibernate.orm:hibernate-hikaricp:$hibernateVersion"
     annotationProcessor("org.hibernate.orm:hibernate-jpamodelgen:$hibernateVersion")
     implementation 'jakarta.transaction:jakarta.transaction-api:2.0.1'
-    implementation 'org.postgresql:postgresql:42.7.5'
+    implementation 'org.postgresql:postgresql:42.7.7'
     implementation project(":commons")
 }
 

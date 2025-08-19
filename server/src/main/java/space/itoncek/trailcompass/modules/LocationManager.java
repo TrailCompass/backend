@@ -13,7 +13,7 @@ package space.itoncek.trailcompass.modules;
  */
 
 import space.itoncek.trailcompass.TrailServer;
-import space.itoncek.trailcompass.commons.objects.Location;
+import space.itoncek.trailcompass.proto.objects.Location;
 
 public class LocationManager {
 	private final TrailServer server;

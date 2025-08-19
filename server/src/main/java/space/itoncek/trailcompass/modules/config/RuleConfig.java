@@ -14,7 +14,7 @@ package space.itoncek.trailcompass.modules.config;
 
 import lombok.Getter;
 import space.itoncek.trailcompass.TrailServer;
-import space.itoncek.trailcompass.commons.objects.Player;
+import space.itoncek.trailcompass.proto.objects.Player;
 
 import java.io.Serializable;
 import java.util.UUID;

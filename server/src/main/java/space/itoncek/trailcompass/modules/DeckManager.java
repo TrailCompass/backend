@@ -16,10 +16,10 @@ import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
 import space.itoncek.trailcompass.TrailServer;
-import space.itoncek.trailcompass.commons.objects.CardCastRequirement;
-import space.itoncek.trailcompass.commons.objects.CardClass;
-import space.itoncek.trailcompass.commons.objects.CardType;
-import space.itoncek.trailcompass.commons.utils.BackendException;
+import space.itoncek.trailcompass.proto.objects.CardCastRequirement;
+import space.itoncek.trailcompass.proto.objects.CardClass;
+import space.itoncek.trailcompass.proto.objects.CardType;
+import space.itoncek.trailcompass.proto.utils.BackendException;
 import space.itoncek.trailcompass.database.CurseMetadata;
 import space.itoncek.trailcompass.database.DatabasePlayer;
 import space.itoncek.trailcompass.database.FreeQuestionToken;
@@ -114,9 +114,9 @@ public class DeckManager {
 		}
 	}
 
-	public List<space.itoncek.trailcompass.commons.objects.Card> listAllMyCards(UUID playerUUID) throws BackendException {
+	public List<space.itoncek.trailcompass.proto.objects.Card> listAllMyCards(UUID playerUUID) throws BackendException {
 		AtomicBoolean failed = new AtomicBoolean(false);
-		List<space.itoncek.trailcompass.commons.objects.Card> cards = new ArrayList<>();
+		List<space.itoncek.trailcompass.proto.objects.Card> cards = new ArrayList<>();
 		server.ef.runInTransaction(em -> {
 			DatabasePlayer player = em.find(DatabasePlayer.class, playerUUID);
 			if (player == null) {
@@ -160,9 +160,9 @@ public class DeckManager {
 		return cardType.get().requirement;
 	}
 
-	public space.itoncek.trailcompass.commons.objects.Card getCardMetadata(UUID cardId) {
+	public space.itoncek.trailcompass.proto.objects.Card getCardMetadata(UUID cardId) {
 		var ref = new Object() {
-			space.itoncek.trailcompass.commons.objects.Card c = null;
+			space.itoncek.trailcompass.proto.objects.Card c = null;
 		};
 		server.ef.runInTransaction(em -> {
 			Card card = em.find(Card.class,cardId);

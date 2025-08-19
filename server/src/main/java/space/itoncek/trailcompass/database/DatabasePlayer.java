@@ -15,7 +15,7 @@ package space.itoncek.trailcompass.database;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import space.itoncek.trailcompass.commons.objects.Player;
+import space.itoncek.trailcompass.proto.objects.Player;
 import space.itoncek.trailcompass.database.cards.DeckCard;
 import space.itoncek.trailcompass.database.cards.ShadowCard;
 

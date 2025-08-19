@@ -12,7 +12,7 @@ package space.itoncek.trailcompass.gamedata.metadata;
  *                                    Copyright (c) 2025.
  */
 
-import space.itoncek.trailcompass.commons.objects.CardClass;
+import space.itoncek.trailcompass.proto.objects.CardClass;
 
 public record CardMetadata(CardClass cardClass, String title, String description, String casting_cost
 ) {

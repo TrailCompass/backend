@@ -13,8 +13,8 @@ package space.itoncek.trailcompass.gamedata;
  */
 
 import space.itoncek.trailcompass.TrailServer;
-import space.itoncek.trailcompass.commons.objects.CardClass;
-import space.itoncek.trailcompass.commons.objects.CardType;
+import space.itoncek.trailcompass.proto.objects.CardClass;
+import space.itoncek.trailcompass.proto.objects.CardType;
 import space.itoncek.trailcompass.database.cards.DeckCard;
 
 import java.io.IOException;

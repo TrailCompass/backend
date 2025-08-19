@@ -12,7 +12,7 @@ package space.itoncek.trailcompass.gamedata.utils;
  *                                    Copyright (c) 2025.
  */
 
-import space.itoncek.trailcompass.commons.objects.Location;
+import space.itoncek.trailcompass.proto.objects.Location;
 
 public class LocationUtils {
 	public static double calculateDistance(Location l1, Location l2) {

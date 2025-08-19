@@ -13,7 +13,7 @@ package space.itoncek.trailcompass.modules;
  */
 
 import space.itoncek.trailcompass.TrailServer;
-import space.itoncek.trailcompass.commons.objects.GameState;
+import space.itoncek.trailcompass.proto.objects.GameState;
 import space.itoncek.trailcompass.modules.config.Config;
 import space.itoncek.trailcompass.modules.config.RestPeriod;
 
@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import static space.itoncek.trailcompass.commons.objects.GameState.*;
+import static space.itoncek.trailcompass.proto.objects.GameState.*;
 
 public class GameManager {
 	private final TrailServer server;

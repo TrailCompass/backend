@@ -15,7 +15,7 @@ package space.itoncek.trailcompass.database;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import space.itoncek.trailcompass.commons.objects.Location;
+import space.itoncek.trailcompass.proto.objects.Location;
 
 import java.util.UUID;
 @Getter

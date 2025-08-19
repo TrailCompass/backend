@@ -13,8 +13,8 @@ package space.itoncek.trailcompass.exchange;
  */
 
 import space.itoncek.trailcompass.TrailServer;
-import space.itoncek.trailcompass.commons.exchange.IDeckExchange;
-import space.itoncek.trailcompass.commons.exchange.IExchange;
+import space.itoncek.trailcompass.proto.exchange.IDeckExchange;
+import space.itoncek.trailcompass.proto.exchange.IExchange;
 
 public class Exchange implements IExchange {
 	private final TrailServer server;

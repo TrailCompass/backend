@@ -20,14 +20,14 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import javalinjwt.JWTGenerator;
 import javalinjwt.JWTProvider;
 import space.itoncek.trailcompass.TrailServer;
-import space.itoncek.trailcompass.commons.exchange.Authorized;
-import space.itoncek.trailcompass.commons.exchange.IAuthExchange;
-import space.itoncek.trailcompass.commons.objects.Player;
-import space.itoncek.trailcompass.commons.requests.auth.*;
-import space.itoncek.trailcompass.commons.responses.auth.LoginResponse;
-import space.itoncek.trailcompass.commons.responses.auth.ProfileListResponse;
-import space.itoncek.trailcompass.commons.responses.auth.ProfileResponse;
-import space.itoncek.trailcompass.commons.responses.generic.OkResponse;
+import space.itoncek.trailcompass.proto.exchange.Authorized;
+import space.itoncek.trailcompass.proto.exchange.IAuthExchange;
+import space.itoncek.trailcompass.proto.objects.Player;
+import space.itoncek.trailcompass.proto.requests.auth.*;
+import space.itoncek.trailcompass.proto.responses.auth.LoginResponse;
+import space.itoncek.trailcompass.proto.responses.auth.ProfileListResponse;
+import space.itoncek.trailcompass.proto.responses.auth.ProfileResponse;
+import space.itoncek.trailcompass.proto.responses.generic.OkResponse;
 import space.itoncek.trailcompass.database.DatabasePlayer;
 import space.itoncek.trailcompass.objects.UserMeta;
 
@@ -37,7 +37,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static space.itoncek.trailcompass.commons.utils.RandomUtils.generateRandomString;
+import static space.itoncek.trailcompass.proto.utils.RandomUtils.generateRandomString;
 
 public class AuthExchange implements IAuthExchange {
 	private final TrailServer server;

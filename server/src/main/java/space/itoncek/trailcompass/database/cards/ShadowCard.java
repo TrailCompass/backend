@@ -24,7 +24,7 @@ public class ShadowCard extends Card {
     @ManyToOne(targetEntity = DeckCard.class)
     DeckCard mirroredCard;
 
-    public space.itoncek.trailcompass.commons.objects.Card serialize() {
-        return new space.itoncek.trailcompass.commons.objects.Card(getId(),getOwner().getId(),getMirroredCard().getType(),true);
+    public space.itoncek.trailcompass.proto.objects.Card serialize() {
+        return new space.itoncek.trailcompass.proto.objects.Card(getId(),getOwner().getId(),getMirroredCard().getType(),true);
     }
 }

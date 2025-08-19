@@ -17,7 +17,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.Getter;
 import lombok.Setter;
-import space.itoncek.trailcompass.commons.objects.CardType;
+import space.itoncek.trailcompass.proto.objects.CardType;
 
 @Getter
 @Setter
@@ -26,7 +26,7 @@ public class DeckCard extends Card {
 	@Enumerated(value = EnumType.STRING)
 	CardType type;
 
-	public space.itoncek.trailcompass.commons.objects.Card serialize() {
-		return new space.itoncek.trailcompass.commons.objects.Card(getId(),getOwner().getId(),getType(),false);
+	public space.itoncek.trailcompass.proto.objects.Card serialize() {
+		return new space.itoncek.trailcompass.proto.objects.Card(getId(),getOwner().getId(),getType(),false);
 	}
 }

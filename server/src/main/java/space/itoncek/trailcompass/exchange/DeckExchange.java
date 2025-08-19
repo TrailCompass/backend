@@ -14,13 +14,13 @@ package space.itoncek.trailcompass.exchange;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import space.itoncek.trailcompass.TrailServer;
-import space.itoncek.trailcompass.commons.exchange.IDeckExchange;
-import space.itoncek.trailcompass.commons.objects.Card;
-import space.itoncek.trailcompass.commons.objects.CardCastRequirement;
-import space.itoncek.trailcompass.commons.requests.deck.*;
-import space.itoncek.trailcompass.commons.responses.deck.*;
-import space.itoncek.trailcompass.commons.responses.generic.OkResponse;
-import space.itoncek.trailcompass.commons.utils.BackendException;
+import space.itoncek.trailcompass.proto.exchange.IDeckExchange;
+import space.itoncek.trailcompass.proto.objects.Card;
+import space.itoncek.trailcompass.proto.objects.CardCastRequirement;
+import space.itoncek.trailcompass.proto.requests.deck.*;
+import space.itoncek.trailcompass.proto.responses.deck.*;
+import space.itoncek.trailcompass.proto.responses.generic.OkResponse;
+import space.itoncek.trailcompass.proto.utils.BackendException;
 import space.itoncek.trailcompass.gamedata.metadata.CardMetadata;
 import space.itoncek.trailcompass.gamedata.metadata.CurseMetadataHandler;
 
